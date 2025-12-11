@@ -3,8 +3,12 @@ import 'package:test_main/screens/product/list.dart';
 import '../app_colors.dart';
 import '../../main.dart';
 import '../mypage/transaction_history.dart';
+
+import '../remit/remit_step1.dart';
+
 import '../mypage/mypage.dart';
 import '../exchange/forex_insight.dart';
+
 
 
 
@@ -533,22 +537,34 @@ class _AccountCard extends StatelessWidget {
 
           const SizedBox(height: 14),
 
-          // 버튼 2개 (이체 / 전용 화면)
+          // 버튼 2개 (이체 / 내역)
           Row(
             children: [
+              // 🔵 이체 버튼
               Expanded(
-                child: Container(
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF3E5D9C),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      "이체",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => RemitStep1Page(),
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3E5D9C),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        "이체",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -557,13 +573,14 @@ class _AccountCard extends StatelessWidget {
 
               const SizedBox(width: 10),
 
+              // ⚪ 내역 버튼
               Expanded(
                 child: InkWell(
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const TransactionHistoryPage(), // 이동할 화면
+                        builder: (_) => const TransactionHistoryPage(),
                       ),
                     );
                   },
