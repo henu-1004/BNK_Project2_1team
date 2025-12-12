@@ -59,7 +59,6 @@ class _RrnBackInputPageState extends State<RrnBackInputPage> {
         title: const Text("회원가입",
             style: TextStyle(color: Colors.black, fontSize: 18)),
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -88,7 +87,6 @@ class _RrnBackInputPageState extends State<RrnBackInputPage> {
               }),
             ),
 
-
             const Spacer(),
 
             // 🔥 숫자키패드
@@ -97,42 +95,36 @@ class _RrnBackInputPageState extends State<RrnBackInputPage> {
                 // 1~9 랜덤 3줄
                 for (int row = 0; row < 3; row++)
                   Row(
-
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      for (int col = 0; col < 3; col++)
-                        _buildKey(numbers[row * 3 + col]),
-
-
+                      for (int col = 0; col < 3; col++) ...[
+                        Expanded(child: _buildKey(numbers[row * 3 + col])),
+                        if (col != 2) const SizedBox(width: 8),
+                      ],
                     ],
                   ),
 
-
-
                 // 마지막 줄 : ↺ | 0 | 백스페이스
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // ↺ 재배치
-                    _buildIconKey(
-                      icon: Icons.refresh,
-                      onTap: () {
-                        setState(() {
-                          shuffleNumbers();
-                        });
-                      },
+                    Expanded(
+                      child: _buildIconKey(
+                        icon: Icons.refresh,
+                        onTap: shuffleNumbers,
+                      ),
                     ),
-
-                    // 0
-                    _buildKey(0),
-
-                    // 백스페이스
-                    _buildIconKey(
-                      icon: Icons.backspace_outlined,
-                      onTap: deleteNumber,
+                    const SizedBox(width: 8),
+                    Expanded(child: _buildKey(0)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildIconKey(
+                        icon: Icons.backspace_outlined,
+                        onTap: deleteNumber,
+                      ),
                     ),
                   ],
-                )
+                ),
+
               ],
             ),
 
@@ -148,11 +140,10 @@ class _RrnBackInputPageState extends State<RrnBackInputPage> {
     return GestureDetector(
       onTap: () => addNumber(number),
       child: Container(
-        width: 120,
-        height: 90,
+        height: 90, // 세로만 고정
         margin: const EdgeInsets.symmetric(vertical: 7),
         decoration: BoxDecoration(
-          color: Color(0xFFEBF0F6),
+          color: const Color(0xFFEBF0F6),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Center(

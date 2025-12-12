@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:test_main/screens/app_colors.dart';
+import 'package:test_main/screens/member/signup_7.dart';
 
 class SignUp6Page extends StatelessWidget {
   final String name;
@@ -183,7 +184,10 @@ class _LimitAccountPopup extends StatelessWidget {
                 backgroundColor: AppColors.pointDustyNavy,
               ),
               onPressed: () {
-                Navigator.pop(context); // 팝업 닫기
+                Navigator.push(context, MaterialPageRoute(
+                    builder: (_) => AgreementPage()
+                )); // 팝업 닫기
+
                 // → 필요하면 다음 페이지 push
               },
               child: const Text(
