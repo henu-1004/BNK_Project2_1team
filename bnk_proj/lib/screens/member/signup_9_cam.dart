@@ -1,6 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:test_main/screens/member/signup_10.dart';
 
 class IdCameraPage extends StatefulWidget {
   const IdCameraPage({super.key});
@@ -23,7 +24,7 @@ class _IdCameraPageState extends State<IdCameraPage> {
     _cameras = await availableCameras();
     _controller = CameraController(
       _cameras.first,
-      ResolutionPreset.high,
+      ResolutionPreset.medium,
       enableAudio: false,
     );
     await _controller!.initialize();
@@ -107,26 +108,32 @@ class _IdCameraPageState extends State<IdCameraPage> {
   Future<void> _takePicture() async {
     final image = await _controller!.takePicture();
 
+    // 카메라 리소스 즉시 해제
+    await _controller?.pausePreview();
+    await _controller?.dispose();
+    _controller = null;
+
     final inputImage = InputImage.fromFilePath(image.path);
+    final textRecognizer =
+    TextRecognizer(script: TextRecognitionScript.korean);
 
-    // 2️⃣ 한글 OCR 인식기 생성
-    final textRecognizer = TextRecognizer(
-      script: TextRecognitionScript.korean,
-    );
-
-    // 3️⃣ OCR 실행
     final recognizedText =
     await textRecognizer.processImage(inputImage);
 
-    // 4️⃣ 결과 확인 (디버그)
-    print(recognizedText.text);
-
-    // 5️⃣ 사용 끝났으면 반드시 close
     await textRecognizer.close();
 
-    // 👉 여기서 ML Kit OCR로 넘기면 됨
-    // image.path
+    if (!mounted) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => IdOcrResultPage(
+          recognizedText: recognizedText.text,
+        ),
+      ),
+    );
   }
+
 }
 
 class _IdGuideOverlay extends StatelessWidget {
