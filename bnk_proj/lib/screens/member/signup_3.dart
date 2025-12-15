@@ -580,7 +580,7 @@ class _LoadingDialogState extends State<LoadingDialog> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Image.asset(
-            "images/flobankicon2.png",
+            "images/flobankloadingicon.png",
             width: 80,
           ),
           const SizedBox(height: 16),

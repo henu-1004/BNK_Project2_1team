@@ -126,7 +126,7 @@ class SignUp6Page extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => const _LimitAccountPopup(),
+      builder: (context) => _LimitAccountPopup(name, rrn, phone),
     );
   }
 }
@@ -135,7 +135,10 @@ class SignUp6Page extends StatelessWidget {
 
 
 class _LimitAccountPopup extends StatelessWidget {
-  const _LimitAccountPopup();
+  const _LimitAccountPopup(this.name, this.rrn, this.phone);
+  final String name;
+  final String rrn;
+  final String phone;
 
   @override
   Widget build(BuildContext context) {
@@ -185,7 +188,7 @@ class _LimitAccountPopup extends StatelessWidget {
               ),
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(
-                    builder: (_) => AgreementPage()
+                    builder: (_) => AgreementPage(name: name, rrn: rrn, phone: phone,)
                 )); // 팝업 닫기
 
                 // → 필요하면 다음 페이지 push

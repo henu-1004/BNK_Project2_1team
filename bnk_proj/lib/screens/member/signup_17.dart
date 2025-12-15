@@ -1,23 +1,22 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:test_main/screens/member/signup_18.dart';
 import 'package:test_main/screens/member/signup_8.dart';
-
 import '../app_colors.dart';
 
 
-
-class AgreementPage extends StatefulWidget {
-  const AgreementPage({super.key, required this.name, required this.rrn, required this.phone});
+class AcctAgreementPage extends StatefulWidget {
+  const AcctAgreementPage({super.key, required this.name, required this.rrn, required this.phone});
   final String name;
   final String rrn;
   final String phone;
 
   @override
-  State<AgreementPage> createState() => _AgreementPageState();
+  State<AcctAgreementPage> createState() => _AcctAgreementPageState();
 }
 
-class _AgreementPageState extends State<AgreementPage> {
+class _AcctAgreementPageState extends State<AcctAgreementPage> {
 
   final SingleAgreementItem confirmProductNotice =
   SingleAgreementItem(
@@ -34,47 +33,84 @@ class _AgreementPageState extends State<AgreementPage> {
       title: "전자금융 약관 동의",
       required: true,
       items: [
+        AgreementItem(title: "KB국민인증서 서비스설명서"),
+        AgreementItem(title: "KB국민인증서 서비스 이용약관"),
+        AgreementItem(title: "KB본인확인서비스 이용약관"),
+        AgreementItem(title: "고유식별정보 수집·이용 동의서(FB국민인증서)"),
+        AgreementItem(title: "개인(신용)정보 수집·이용 동의서(FB국민인증서)"),
         AgreementItem(title: "전자금융거래기본약관"),
+        AgreementItem(title: "전자금융서비스설명서"),
         AgreementItem(title: "전자금융서비스이용약관"),
-        AgreementItem(title: "FB뱅킹서비스이용신청필수동의"),
+        AgreementItem(title: "스타뱅킹서비스이용신청필수동의"),
       ],
     ),
+
     AgreementGroup(
       title: "상품 약관 동의",
       required: true,
       items: [
-        AgreementItem(title: "입출금상품 이용약관"),
-        AgreementItem(title: "상품설명서"),
+        AgreementItem(title: "예금거래기본약관"),
+        AgreementItem(title: "입출금이자유로운예금"),
+        AgreementItem(title: "FB스타통장 특약"),
+        AgreementItem(title: "FB스타통장 상품설명서"),
+        AgreementItem(
+          title:
+          "개인(신용)정보 수집·이용·제공·조회 동의서(비대면 계좌개설 안심차단 등록 여부 조회용)",
+        ),
       ],
     ),
+
+
+    AgreementGroup(
+      title: "확인 및 안내사항",
+      required: true,
+      items: [
+        AgreementItem(title: "예금자보호제도 확인(FB스타뱅킹)"),
+        AgreementItem(title: "통장양도금지 확인(FB스타뱅킹)"),
+        AgreementItem(title: "불법 탈법 차명거래 금지 설명 확인"),
+        AgreementItem(title: "가상자산 관련 대고객 안내문(20240730)"),
+
+      ],
+    ),
+
     AgreementGroup(
       title: "금융상품의 중요사항 안내",
       required: true,
-      items: const [], // 기존 약관 아님
+      items: const [],
       noticeItems: [
         ImportantNoticeItem(
           title: "우선설명 사항 [필수]",
           descriptions: [
-            "이자율(중도해지이율, 만기해지이율 등) 및 산출근거",
+            "이자율(중도해지이율, 만기해지이율, 만기후이율) 및 산출근거",
           ],
         ),
         ImportantNoticeItem(
           title: "부담정보 및 금융소비자의 권리 사항 [필수]",
           descriptions: [
-            "중도해지에 따른 불이익",
+            "중도 해지에 따른 불이익",
             "금리변동형 상품 안내",
+            "자료열람요구권 행사에 관한 사항",
+            "위법계약해지권 행사에 관한 사항",
+            "금융상품 만기 전·후 안내(상품만기 알림 서비스)",
             "휴면예금 및 출연(계좌의 거래중지)",
+            "예금자보호법에 관한 사항(예금자보호 여부 및 그 내용)",
+            "민원처리 및 분쟁조정 절차",
           ],
         ),
         ImportantNoticeItem(
           title: "예금성 상품 및 연계·제휴 서비스 [필수]",
           descriptions: [
-            "예금상품의 내용, 계약의 해지·해지사유",
-            "연계·제휴 서비스 제공 조건",
+            "예금상품의 내용(계약기간, 이자의 지급시기 및 지급제한 사유)",
+            "계약의 해제·해지",
+            "연계·제휴 서비스의 내용, 제공받을 수 있는 요건, 제공기간",
+            "이행책임, 변경 시 변경내용 및 그 사유",
+            "중요사항 사전·사후 안내 방법",
           ],
         ),
       ],
     ),
+
+
 
 
   ];
@@ -98,8 +134,9 @@ class _AgreementPageState extends State<AgreementPage> {
           Expanded(
             child: ListView(
               children: [
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 ...agreements.map(_buildGroup),
+                _buildGrayNoticeText(),
                 _buildSingleAgreement(confirmProductNotice),
                 _buildSingleAgreementWarning(),
               ],
@@ -112,14 +149,14 @@ class _AgreementPageState extends State<AgreementPage> {
             height: 55,
             child: ElevatedButton(
               onPressed: isRequiredAllChecked ? () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => SignUp8Page(name: widget.name, phone: widget.phone, rrn: widget.rrn,)));
+                Navigator.push(context, MaterialPageRoute(builder: (_) => CustomerInfoPage(name: widget.name, phone: widget.phone, rrn: widget.rrn,)));
               } : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: isRequiredAllChecked
                     ? AppColors.pointDustyNavy
                     : Colors.grey.shade300,
                 shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.zero,
+                  borderRadius: BorderRadius.zero,
                 ),
               ),
               child: Text(
@@ -147,9 +184,11 @@ class _AgreementPageState extends State<AgreementPage> {
         children: [
           Row(
             children: [
-              // ✅ 전체동의 체크 아이콘 영역
-              if (group.noticeItems == null)
-                GestureDetector(
+              // ✅ 항상 같은 영역 차지
+              SizedBox(
+                width: 40,
+                child: group.noticeItems == null
+                    ? GestureDetector(
                   onTap: () {
                     setState(() {
                       final newValue = !group.allChecked;
@@ -159,7 +198,7 @@ class _AgreementPageState extends State<AgreementPage> {
                     });
                   },
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 12, 13, 12),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                     child: Icon(
                       group.allChecked
                           ? Icons.check_circle
@@ -169,10 +208,11 @@ class _AgreementPageState extends State<AgreementPage> {
                           : Colors.grey,
                     ),
                   ),
-                ),
+                )
+                    : const SizedBox(height: 48), // ⭐ 높이 맞추기용
+              ),
 
-
-              // ✅ 나머지 영역 = 펼침/접힘
+              // 제목 영역
               Expanded(
                 child: InkWell(
                   onTap: () {
@@ -181,8 +221,7 @@ class _AgreementPageState extends State<AgreementPage> {
                     });
                   },
                   child: Padding(
-                    padding:
-                    const EdgeInsets.symmetric(vertical: 5),
+                    padding: const EdgeInsets.symmetric(vertical: 12), // ⭐ 핵심
                     child: Row(
                       children: [
                         Expanded(
@@ -205,6 +244,12 @@ class _AgreementPageState extends State<AgreementPage> {
                 ),
               ),
             ],
+          ),
+          SizedBox(height: 7,),
+          const Divider(
+            height: 10,
+            thickness: 1,
+            color: Color(0xFFE0E0E0),
           ),
 
           // 펼쳐지는 세부 항목
@@ -240,8 +285,6 @@ class _AgreementPageState extends State<AgreementPage> {
                 );
               }).toList(),
             ),
-
-
         ],
       ),
     );
@@ -347,6 +390,24 @@ class _AgreementPageState extends State<AgreementPage> {
     );
   }
 
+
+  Widget _buildGrayNoticeText() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+      child: Text(
+        "＊ 금융상품의 중요사항에 대한 일반적인 안내사항으로\n"
+            "   세부내용은 상품설명서를 통해 확인하실 수 있습니다.\n\n"
+            "＊ 금융소비자는 해당 상품 또는 연계·제휴 서비스에 대해\n"
+            "   설명을 요구할 권리가 있으며, 궁금한 사항이 있을 경우\n"
+            "   챗봇/상담센터(1588-9999) 또는 지정 직원에게 문의하시기 바랍니다.",
+        style: const TextStyle(
+          fontSize: 13,
+          height: 1.5,
+          color: Colors.black45,
+        ),
+      ),
+    );
+  }
 
 
 }

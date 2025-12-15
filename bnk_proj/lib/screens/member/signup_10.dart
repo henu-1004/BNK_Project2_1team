@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:test_main/screens/app_colors.dart';
+import 'package:test_main/screens/member/signup_11.dart';
 
 class IdCardConfirmPage extends StatelessWidget {
   final String ocrText;
 
+  final String name;
+  final String rrn;
+  final String phone;
+
   const IdCardConfirmPage({
     super.key,
-    required this.ocrText,
+    required this.ocrText, required this.name, required this.rrn, required this.phone,
   });
 
   @override
   Widget build(BuildContext context) {
-    print("===== OCR RAW TEXT =====");
-    print(ocrText);
-    print("========================");
+
 
     final name = extractName(ocrText) ?? "인식 실패";
     final rrnRaw = extractRrn(ocrText);
@@ -67,7 +70,7 @@ class IdCardConfirmPage extends StatelessWidget {
           Expanded(
             child: GestureDetector(
               onTap: () {
-                // 다음 단계 이동
+                Navigator.push(context, MaterialPageRoute(builder: (_) => IdVerifyCompletePage(name: name, rrn: rrn, phone: phone,)));
               },
               child: Container(
                 height: 60,
