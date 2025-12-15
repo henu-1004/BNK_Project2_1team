@@ -7,12 +7,11 @@ class MyFxDepositScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: 나중에 실제 API에서 불러오기
     final fxDeposits = const <_FxDeposit>[
       _FxDeposit(
         productName: 'FLOBANK 외화정기예금',
         accountNo: '8888-72-0014-0001',
-        balance: '₩ 1,000,000',
+        balance: '₩ 1,000',
       ),
       _FxDeposit(
         productName: 'FLOBANK 외화정기예금',

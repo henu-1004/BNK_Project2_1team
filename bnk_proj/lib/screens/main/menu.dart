@@ -123,15 +123,15 @@ class _MyPageUserSummary extends StatelessWidget {
                 Text(
                   '홍길동',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 22,
                     fontWeight: FontWeight.w700,
                     color: AppColors.pointDustyNavy,
                   ),
                 ),
-                SizedBox(width: 4),
+                SizedBox(width: 1),
                 Icon(
                   Icons.chevron_right,
-                  size: 20,
+                  size: 22,
                   color: Colors.black38,
                 ),
               ],
@@ -160,7 +160,7 @@ class _MyPageUserSummary extends StatelessWidget {
                 Text(
                   '설정',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
