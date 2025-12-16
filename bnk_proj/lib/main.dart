@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:test_main/screens/member/signup_1.dart';
+import 'package:test_main/services/api_service.dart';
 
 import 'screens/app_colors.dart';
 import 'screens/main/bank_homepage.dart';
@@ -12,6 +13,9 @@ import 'package:test_main/screens/deposit/signature.dart';
 import 'package:test_main/screens/deposit/recommend.dart';
 import 'package:test_main/screens/deposit/survey.dart';
 import 'package:test_main/screens/main/menu/review_write.dart';
+
+import 'package:test_main/utils/device_manager.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -178,6 +182,18 @@ class _LoginFormState extends State<_LoginForm> {
   bool rememberMe = true;
   bool showPassword = false;
 
+  // 입력값 가져오는 컨트롤러 추가
+  final TextEditingController _idController = TextEditingController();
+  final TextEditingController _pwController = TextEditingController();
+
+  @override
+  void dispose() {
+    // 메모리 누수 방지를 위해 화면이 꺼질 때 컨트롤러 정리
+    _idController.dispose();
+    _pwController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -207,7 +223,8 @@ class _LoginFormState extends State<_LoginForm> {
             ),
           ),
           const SizedBox(height: 16),
-          const TextField(
+          TextField(
+            controller: _idController, // 컨트롤러 연결
             decoration: InputDecoration(
               labelText: '아이디 또는 이메일',
               prefixIcon: Icon(Icons.person_outline, color: AppColors.pointDustyNavy),
@@ -216,6 +233,7 @@ class _LoginFormState extends State<_LoginForm> {
           ),
           const SizedBox(height: 12),
           TextField(
+            controller: _pwController, // 컨트롤러 연결
             obscureText: !showPassword,
             decoration: InputDecoration(
               labelText: '비밀번호',
@@ -256,11 +274,36 @@ class _LoginFormState extends State<_LoginForm> {
               minimumSize: const Size.fromHeight(50),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
-            onPressed: () {
-              debugPrint('로그인 버튼 클릭');
-              Navigator.push(context, MaterialPageRoute(
-                  builder: (context) => const BankHomePage())
-              );
+            onPressed: () async {
+              // 1. 입력값 확인
+              String id = _idController.text.trim();
+              String pw = _pwController.text.trim();
+
+              if (id.isEmpty || pw.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('아이디와 비밀번호를 입력해주세요.')),
+                );
+                return;
+              }
+
+              // 2. DeviceID 가져오기
+              String deviceId = await DeviceManager.getDeviceId();
+
+              // 3. ApiService를 통해 로그인 요청 (코드가 매우 간결해짐)
+              bool isSuccess = await ApiService.login(id, pw, deviceId);
+
+              if (!mounted) return; // 비동기 처리 후 위젯이 살아있는지 확인
+
+              if (isSuccess) {
+                Navigator.pushReplacement( // 뒤로가기 못하게 Replacement 사용 추천
+                    context,
+                    MaterialPageRoute(builder: (context) => const BankHomePage())
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('로그인에 실패했습니다. 아이디/비밀번호를 확인하세요.')),
+                );
+              }
             },
             child: const Text('로그인하기'),
           ),
