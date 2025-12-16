@@ -19,6 +19,8 @@ import 'package:test_main/screens/main/menu/review_write.dart';
 
 import 'package:test_main/utils/device_manager.dart';
 import 'package:http/http.dart' as http;
+import 'package:test_main/models/deposit/application.dart';
+
 
 void main() async{
   // 1. 플러터 엔진 초기화 (비동기 작업 전 필수)

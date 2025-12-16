@@ -7,10 +7,12 @@ import 'package:test_main/screens/member/signup_9_cam.dart';
 import '../app_colors.dart';
 
 class SignUp8Page extends StatefulWidget {
-  const SignUp8Page({super.key, required this.name, required this.rrn, required this.phone});
+  const SignUp8Page({super.key, required this.name, required this.rrn, required this.phone, required this.id, required this.pw});
   final String name;
   final String rrn;
   final String phone;
+  final String id;
+  final String pw;
 
   @override
   State<SignUp8Page> createState() => _SignUp8PageState();
@@ -95,7 +97,7 @@ class _SignUp8PageState extends State<SignUp8Page> {
                 ),
                 onPressed: () {
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => IdCameraPage(name: widget.name, phone: widget.phone, rrn: widget.rrn,)));
+                      MaterialPageRoute(builder: (_) => IdCameraPage(name: widget.name, phone: widget.phone, rrn: widget.rrn, id: widget.id, pw: widget.pw,)));
                 },
                 child: const Text(
                   "촬영",

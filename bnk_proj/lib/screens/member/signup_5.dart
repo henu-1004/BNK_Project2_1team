@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:test_main/screens/app_colors.dart';
+import 'package:test_main/screens/member/signup_5_id_pw.dart';
 import 'package:test_main/screens/member/signup_5_jumin.dart';
-import 'package:test_main/screens/member/signup_6.dart';
+
 
 class SignUp5Page extends StatefulWidget {
   final String name;
@@ -350,7 +351,7 @@ class _AgreementSheetState extends State<AgreementSheet> {
                   onPressed: reqAgree ? () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => SignUp6Page(name: widget.name, rrn: widget.rrn, phone: widget.phone,))
+                      MaterialPageRoute(builder: (_) => LoginCredentialSetupPage(name: widget.name, rrn: widget.rrn, phone: widget.phone,))
                     );
                   } : null,
                   style: ElevatedButton.styleFrom(

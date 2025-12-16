@@ -5,10 +5,12 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:test_main/screens/member/signup_14.dart';
 
 class FaceCapturePage extends StatefulWidget {
-  const FaceCapturePage({super.key, required this.name, required this.rrn, required this.phone});
+  const FaceCapturePage({super.key, required this.name, required this.rrn, required this.phone, required this.id, required this.pw});
   final String name;
   final String rrn;
   final String phone;
+  final String id;
+  final String pw;
 
   @override
   State<FaceCapturePage> createState() => _FaceCapturePageState();
@@ -81,6 +83,8 @@ class _FaceCapturePageState extends State<FaceCapturePage> {
           name: widget.name,
           phone: widget.phone,
           rrn: widget.rrn,
+          id: widget.id,
+          pw: widget.pw,
         ),
       ),
     );

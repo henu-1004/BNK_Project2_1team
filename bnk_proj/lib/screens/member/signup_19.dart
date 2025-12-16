@@ -15,8 +15,10 @@ class ExtraInfoPage extends StatefulWidget {
   final String phoneAgree;
   final String emailAgree;
   final String smsAgree;
+  final String id;
+  final String pw;
 
-  const ExtraInfoPage({super.key, required this.name, required this.rrn, required this.phone, required this.zip, required this.addr1, required this.addr2, required this.email, required this.mailAgree, required this.phoneAgree, required this.emailAgree, required this.smsAgree});
+  const ExtraInfoPage({super.key, required this.name, required this.rrn, required this.phone, required this.zip, required this.addr1, required this.addr2, required this.email, required this.mailAgree, required this.phoneAgree, required this.emailAgree, required this.smsAgree, required this.id, required this.pw});
 
   @override
   State<ExtraInfoPage> createState() => _ExtraInfoPageState();
@@ -240,7 +242,7 @@ class _ExtraInfoPageState extends State<ExtraInfoPage> {
                 Navigator.push(
                     context,
                   MaterialPageRoute(
-                      builder: (_) => DemandAccountOpenPage(name: widget.name, email: widget.email, rrn: widget.rrn, phone: widget.phone, zip: widget.zip, addr1: widget.addr1, addr2: widget.addr2, mailAgree: widget.mailAgree, smsAgree: widget.smsAgree, emailAgree: widget.emailAgree, phoneAgree: widget.phoneAgree, purpose: purpose, jobType: jobType, source: source, isOwner: isOwner, isForeignTax: isForeignTax, showForeignInfo: showForeignInfo, showNotice: showNotice, )
+                      builder: (_) => DemandAccountOpenPage(name: widget.name, email: widget.email, rrn: widget.rrn, phone: widget.phone, zip: widget.zip, addr1: widget.addr1, addr2: widget.addr2, mailAgree: widget.mailAgree, smsAgree: widget.smsAgree, emailAgree: widget.emailAgree, phoneAgree: widget.phoneAgree, purpose: purpose, jobType: jobType, source: source, isOwner: isOwner, isForeignTax: isForeignTax, showForeignInfo: showForeignInfo, showNotice: showNotice, id: widget.id, pw: widget.pw,)
                   )
                 );
               }
