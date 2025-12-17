@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:test_main/screens/app_colors.dart';
+import 'package:test_main/screens/member/signup_22.dart';
 
 class ElectronicSignaturePage extends StatefulWidget {
   const ElectronicSignaturePage({
@@ -28,7 +29,7 @@ class ElectronicSignaturePage extends StatefulWidget {
     required this.showNotice,
     required this.salaryExist,
     required this.manageBranch,
-    required this.contractMethod,
+    required this.contractMethod, required this.id, required this.pw,
   });
 
   final String name;        // 화면 표시용
@@ -38,6 +39,9 @@ class ElectronicSignaturePage extends StatefulWidget {
   final String source;
   final bool isOwner;
   final bool isForeignTax;
+
+  final String id;
+  final String pw;
 
 
 
@@ -162,7 +166,7 @@ class _ElectronicSignaturePageState extends State<ElectronicSignaturePage> {
 
                 const SizedBox(height: 32),
 
-                // ✍️ 서명 영역
+                // 서명 영역
                 const Text(
                   "전자서명",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -275,7 +279,10 @@ class _ElectronicSignaturePageState extends State<ElectronicSignaturePage> {
     // widget.rrn = null; // ← final이라 실제 제거는 scope 종료로 처리
 
     // TODO : 다음 화면 이동
-
+    Navigator.push(
+      context, 
+      MaterialPageRoute(builder: (_) => AccountCreateCompletePage())
+    );
   }
 
 

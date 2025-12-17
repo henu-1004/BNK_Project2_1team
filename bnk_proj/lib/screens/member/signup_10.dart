@@ -8,10 +8,12 @@ class IdCardConfirmPage extends StatelessWidget {
   final String name;
   final String rrn;
   final String phone;
+  final String id;
+  final String pw;
 
   const IdCardConfirmPage({
     super.key,
-    required this.ocrText, required this.name, required this.rrn, required this.phone,
+    required this.ocrText, required this.name, required this.rrn, required this.phone, required this.id, required this.pw,
   });
 
 
@@ -72,7 +74,7 @@ class IdCardConfirmPage extends StatelessWidget {
           Expanded(
             child: GestureDetector(
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => IdVerifyCompletePage(name: name, rrn: rrn, phone: phone,)));
+                Navigator.push(context, MaterialPageRoute(builder: (_) => IdVerifyCompletePage(name: name, rrn: rrn, phone: phone, id: id, pw: pw,)));
               },
               child: Container(
                 height: 60,

@@ -3,10 +3,12 @@ import 'package:test_main/screens/app_colors.dart';
 import 'package:test_main/screens/member/signup_13_face.dart';
 
 class FaceVerifyGuidePage extends StatefulWidget {
-  const FaceVerifyGuidePage({super.key, required this.name, required this.rrn, required this.phone});
+  const FaceVerifyGuidePage({super.key, required this.name, required this.rrn, required this.phone, required this.id, required this.pw});
   final String name;
   final String rrn;
   final String phone;
+  final String id;
+  final String pw;
 
   @override
   State<FaceVerifyGuidePage> createState() => _FaceVerifyGuidePageState();
@@ -95,7 +97,7 @@ class _FaceVerifyGuidePageState extends State<FaceVerifyGuidePage> {
       bottomNavigationBar: GestureDetector(
         onTap: allChecked
             ? () {
-          Navigator.push(context, MaterialPageRoute(builder: (_)=> FaceCapturePage(name: widget.name, rrn: widget.rrn, phone: widget.phone)));
+          Navigator.push(context, MaterialPageRoute(builder: (_)=> FaceCapturePage(name: widget.name, rrn: widget.rrn, phone: widget.phone, id: widget.id, pw: widget.pw,)));
         }
             : null,
         child: Container(

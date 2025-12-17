@@ -3,10 +3,12 @@ import 'package:test_main/screens/app_colors.dart';
 import 'package:test_main/screens/member/signup_12.dart';
 
 class IdVerifyCompletePage extends StatelessWidget {
-  const IdVerifyCompletePage({super.key, required this.name, required this.rrn, required this.phone});
+  const IdVerifyCompletePage({super.key, required this.name, required this.rrn, required this.phone, required this.id, required this.pw});
   final String name;
   final String rrn;
   final String phone;
+  final String id;
+  final String pw;
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +75,7 @@ class IdVerifyCompletePage extends StatelessWidget {
       // ✅ 하단 버튼
       bottomNavigationBar: GestureDetector(
         onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => FaceVerifyGuidePage(name: name, rrn: rrn, phone: phone,)));
+          Navigator.push(context, MaterialPageRoute(builder: (_) => FaceVerifyGuidePage(name: name, rrn: rrn, phone: phone, id: id, pw: pw,)));
         },
         child: Container(
           height: 64,

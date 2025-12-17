@@ -6,13 +6,15 @@ import 'package:test_main/screens/member/signup_17.dart';
 
 
 class AccountVerifyConfirmPage extends StatefulWidget {
-  const AccountVerifyConfirmPage({super.key, required this.name, required this.rrn, required this.phone, required this.bank, required this.accountNumber});
+  const AccountVerifyConfirmPage({super.key, required this.name, required this.rrn, required this.phone, required this.bank, required this.accountNumber, required this.id, required this.pw});
 
   final String name;
   final String rrn;
   final String phone;
   final String bank;
   final String accountNumber;
+  final String id;
+  final String pw;
 
 
 
@@ -206,7 +208,7 @@ class _AccountVerifyConfirmPageState extends State<AccountVerifyConfirmPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => AcctAgreementPage(name: widget.name, rrn: widget.rrn, phone: widget.phone),
+              builder: (_) => AcctAgreementPage(name: widget.name, rrn: widget.rrn, phone: widget.phone, id: widget.id, pw: widget.pw,),
             ),
           );
         }

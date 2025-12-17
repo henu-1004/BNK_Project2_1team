@@ -5,7 +5,7 @@ import 'package:test_main/screens/member/signup_21_esign.dart';
 class DemandAccountOpenPage extends StatefulWidget {
   const DemandAccountOpenPage({
     super.key,
-    required this.email, required this.name, required this.rrn, required this.phone, required this.zip, required this.addr1, required this.addr2, required this.mailAgree, required this.phoneAgree, required this.emailAgree, required this.smsAgree, required this.jobType, required this.purpose, required this.source, required this.isOwner, required this.isForeignTax, required this.showForeignInfo, required this.showNotice,
+    required this.email, required this.name, required this.rrn, required this.phone, required this.zip, required this.addr1, required this.addr2, required this.mailAgree, required this.phoneAgree, required this.emailAgree, required this.smsAgree, required this.jobType, required this.purpose, required this.source, required this.isOwner, required this.isForeignTax, required this.showForeignInfo, required this.showNotice, required this.id, required this.pw,
   });
 
   final String name;
@@ -19,6 +19,9 @@ class DemandAccountOpenPage extends StatefulWidget {
   final String phoneAgree;
   final String emailAgree;
   final String smsAgree;
+
+  final String id;
+  final String pw;
 
   final String jobType;
   final String purpose;
@@ -250,6 +253,8 @@ class _DemandAccountOpenPageState extends State<DemandAccountOpenPage> {
                         salaryExist: salaryExist,
                         manageBranch: manageBranch,
                         contractMethod: contractMethod,
+                        id: widget.id,
+                        pw: widget.pw,
                       ),
                     )
                 );

@@ -3,11 +3,13 @@ import 'package:test_main/screens/member/signup_16.dart';
 import '../app_colors.dart';
 
 class AccountVerifyPage extends StatefulWidget {
-  const AccountVerifyPage({super.key, required this.name, required this.rrn, required this.phone});
+  const AccountVerifyPage({super.key, required this.name, required this.rrn, required this.phone, required this.id, required this.pw});
 
   final String name;
   final String rrn;
   final String phone;
+  final String id;
+  final String pw;
 
 
   @override
@@ -97,6 +99,8 @@ class _AccountVerifyPageState extends State<AccountVerifyPage> {
                 phone: widget.phone,
                 bank: bank,
                 accountNumber: accountNumber,
+                id: widget.id,
+                pw: widget.pw,
               ),
             ),
           );

@@ -8,12 +8,17 @@ class FaceCaptureCompletePage extends StatelessWidget {
     super.key,
     required this.name,
     required this.rrn,
-    required this.phone,
+    required this.phone, 
+    required this.id, 
+    required this.pw,
+
   });
 
   final String name;
   final String rrn;
   final String phone;
+  final String id;
+  final String pw;
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +80,7 @@ class FaceCaptureCompletePage extends StatelessWidget {
       bottomNavigationBar: GestureDetector(
         onTap: () {
           // 다음 단계 (얼굴 비교 안내 / 로딩 / 서버 요청 등)
-          Navigator.push(context, MaterialPageRoute(builder: (_) => AccountVerifyPage(name: name, rrn: rrn, phone: phone)));
+          Navigator.push(context, MaterialPageRoute(builder: (_) => AccountVerifyPage(name: name, rrn: rrn, phone: phone, id: id, pw: pw,)));
         },
         child: Container(
           height: 64,

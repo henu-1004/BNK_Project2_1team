@@ -4,10 +4,12 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import 'package:test_main/screens/member/signup_10.dart';
 
 class IdCameraPage extends StatefulWidget {
-  const IdCameraPage({super.key, required this.name, required this.rrn, required this.phone});
+  const IdCameraPage({super.key, required this.name, required this.rrn, required this.phone, required this.id, required this.pw});
   final String name;
   final String rrn;
   final String phone;
+  final String id;
+  final String pw;
 
   @override
   State<IdCameraPage> createState() => _IdCameraPageState();
@@ -128,7 +130,7 @@ class _IdCameraPageState extends State<IdCameraPage> {
       context,
       MaterialPageRoute(
         builder: (_) => IdCardConfirmPage(
-          ocrText: recognizedText.text, name: widget.name, rrn: widget.rrn, phone: widget.phone,
+          ocrText: recognizedText.text, name: widget.name, rrn: widget.rrn, phone: widget.phone, id: widget.id, pw: widget.pw,
         ),
       ),
     );

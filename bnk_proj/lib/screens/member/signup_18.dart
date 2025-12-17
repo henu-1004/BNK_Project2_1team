@@ -7,10 +7,12 @@ import 'signup_18_addr.dart';
 
 
 class CustomerInfoPage extends StatefulWidget {
-  const CustomerInfoPage({super.key, required this.name, required this.rrn, required this.phone});
+  const CustomerInfoPage({super.key, required this.name, required this.rrn, required this.phone, required this.id, required this.pw});
   final String name;
   final String rrn;
   final String phone;
+  final String id;
+  final String pw;
 
   @override
   State<CustomerInfoPage> createState() => _CustomerInfoPageState();
@@ -133,7 +135,7 @@ class _CustomerInfoPageState extends State<CustomerInfoPage> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (_) => ExtraInfoPage(name: widget.name, rrn: widget.rrn, phone: widget.phone, zip: zip, addr1: addr1, addr2: addr2Ctrl.text, email: fullEmail, mailAgree: mailAgree, phoneAgree: phoneAgree, emailAgree: emailAgree, smsAgree: smsAgree)
+                        builder: (_) => ExtraInfoPage(name: widget.name, rrn: widget.rrn, phone: widget.phone, zip: zip, addr1: addr1, addr2: addr2Ctrl.text, email: fullEmail, mailAgree: mailAgree, phoneAgree: phoneAgree, emailAgree: emailAgree, smsAgree: smsAgree, id: widget.id, pw: widget.pw,)
                     )
                 );
               },
