@@ -195,7 +195,7 @@ class _ElectronicSignaturePageState extends State<ElectronicSignaturePage> {
             width: double.infinity,
             height: 56,
             child: ElevatedButton(
-              onPressed: _hasSignature ? _onSubmit : null,
+              onPressed: _onSubmit ,
               style: ElevatedButton.styleFrom(
                 backgroundColor: _hasSignature
                     ? AppColors.pointDustyNavy
@@ -219,7 +219,7 @@ class _ElectronicSignaturePageState extends State<ElectronicSignaturePage> {
   }
 
   Future<void> _onSubmit() async {
-    if (_points.isEmpty) return;
+    // if (_points.isEmpty) return;
 
     // 계약 스냅샷 생성
     final contractSnapshot = _buildContractSnapshot(personId);
@@ -232,7 +232,6 @@ class _ElectronicSignaturePageState extends State<ElectronicSignaturePage> {
       "contractSnapshot": contractSnapshot,
       "signatureBase64": signatureBase64,
     };
-
 
     /*
     final response = await http.post(
@@ -252,6 +251,9 @@ class _ElectronicSignaturePageState extends State<ElectronicSignaturePage> {
     // widget.rrn = null; // ← final이라 실제 제거는 scope 종료로 처리
 
     widget.custInfo.deviceId = _deviceId;
+    debugPrint('📦 custInfo = ${widget.custInfo}');
+
+
 
     final signupService = SignupService();
     try {
@@ -275,15 +277,7 @@ class _ElectronicSignaturePageState extends State<ElectronicSignaturePage> {
       );
     }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => AccountCreateCompletePage(
-          custAcct: widget.custAcct,
-          custInfo: widget.custInfo,
-        ),
-      ),
-    );
+
   }
 
 

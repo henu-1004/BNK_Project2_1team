@@ -48,6 +48,9 @@ public class CustInfoService {
 
     public String apiRegister(CustInfoDTO custInfoDTO) {
 
+        custInfoDTO.setCustEngName("test");
+
+
         log.info("[회원가입 요청] DTO 전송: {}", custInfoDTO.getCustId());
 
         // 비밀번호 암호화 => 단방향

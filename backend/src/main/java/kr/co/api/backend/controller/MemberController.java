@@ -196,11 +196,21 @@ public class MemberController {
 
     @PostMapping("/api/register")
     public ResponseEntity<Object> appRegister(@RequestBody ReqSignupDTO reqSignupDTO) {
-
+        log.info("🔥 /api/register 진입");
+        log.info("custInfo = {}", reqSignupDTO.getCustInfo());
+        log.info("custAcct = {}", reqSignupDTO.getCustAcct());
         String custCode = custInfoService.apiRegister(reqSignupDTO.getCustInfo());
+        log.info("custInfo = {}", reqSignupDTO.getCustInfo());
         reqSignupDTO.getCustAcct().setAcctCustCode(custCode);
+        log.info("custAcct = {}", reqSignupDTO.getCustAcct());
         mypageService.apiSaveAcct(reqSignupDTO.getCustAcct());
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+    @GetMapping("/ping")
+    public String ping() {
+        return "pong";
+    }
+
 }

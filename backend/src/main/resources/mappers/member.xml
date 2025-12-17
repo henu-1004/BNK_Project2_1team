@@ -35,6 +35,7 @@
             CUST_HP,
             CUST_BIRTH_DT,
             CUST_GEN,
+            CUST_ENG_NAME,
             CUST_ZIP,
             CUST_ADDR1,
             CUST_ADDR2,
@@ -45,7 +46,14 @@
             CUST_EMAIL_AGREE,
             CUST_SMS_AGREE
         )
-        VALUES(#{custId}, #{custPw}, #{custName}, #{custJumin}, #{custEmail}, #{custHp}, #{custBirthDt}, #{custGen}, #{custEngName}, #{custZip}, #{custAddr1}, #{custAddr2}, SYSDATE)
+        VALUES(#{custId}, #{custPw}, #{custName},
+        #{custJumin}, #{custEmail},
+        #{custHp}, #{custBirthDt},
+        #{custGen}, #{custEngName},
+        #{custZip}, #{custAddr1}, #{custAddr2},
+        SYSDATE, #{custDeviceId},
+        #{custMailAgree}, #{custPhoneAgree},
+        #{custEmailAgree}, #{custSmsAgree})
     </insert>
 
 </mapper>
