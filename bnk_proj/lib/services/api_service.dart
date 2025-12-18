@@ -6,14 +6,14 @@ class ApiService {
   // 에뮬레이터에서 로컬호스트 접속 시 10.0.2.2 사용
   // 실기기 연결 시에는 내 PC의 IP 주소(예: 192.168.0.x)를 써야 함
   // 1. 실제 배포 주소 (앱 출시용 - 나중에 서버 올리면 그때 적으세요)
-  static const String _prodUrl = "http://34.64.124.33:8080/backend/api/mobile";
-  static const String baseUrl = "http://10.0.2.2:8080/backend/api/mobile";
-  static const String base2Url = "http://192.168.0.209:8080/backend/api/mobile";
+  static const String _prodUrl = "http://34.64.124.33:8080/backend/api/mobile";   // 실제 배포 서버
+  static const String baseUrl = "http://10.0.2.2:8080/backend/api/mobile";        // 가상 디바이스 테스트
+  static const String base2Url = "http://192.168.0.209:8080/backend/api/mobile";  // 케이블 연결 했을 때 로컬 테스트(본인 컴퓨터 IP로 바꿔야함)
   static const _storage = FlutterSecureStorage();
 
   /// 로그인 요청
   static Future<Map<String, dynamic>> login(String userid, String password, String deviceId) async {
-    final url = Uri.parse('$_prodUrl/member/login');
+    final url = Uri.parse('$baseUrl/member/login');
 
     try {
       final response = await http.post(
@@ -67,7 +67,7 @@ class ApiService {
 
   /// SMS 인증번호 발송 요청
   static Future<Map<String, dynamic>> sendAuthCodeToMember(String userid) async {
-    final url = Uri.parse('$_prodUrl/member/auth/send-code');
+    final url = Uri.parse('$baseUrl/member/auth/send-code');
 
     try {
       final response = await http.post(
@@ -78,9 +78,22 @@ class ApiService {
 
       if (response.statusCode == 200) {
         return jsonDecode(utf8.decode(response.bodyBytes));
-        // 성공 시 {"status": "SUCCESS", "maskedPhone": "010-****-1234"} 반환
       } else {
-        return {"status": "ERROR", "message": "발송 실패"};
+        // 서버에서 보낸 에러 메시지를 디코딩하여 확인
+        try {
+          final errorBody = jsonDecode(utf8.decode(response.bodyBytes));
+          print("서버 에러(${response.statusCode}): ${errorBody['message']}");
+          return {
+            "status": "ERROR",
+            "message": errorBody['message'] ?? "발송 실패 (코드: ${response.statusCode})"
+          };
+        } catch (e) {
+          // JSON 파싱 실패 시 상태 코드라도 출력
+          return {
+            "status": "ERROR",
+            "message": "발송 실패 (서버 응답 코드: ${response.statusCode})"
+          };
+        }
       }
     } catch (e) {
       print("SMS 요청 오류: $e");
@@ -90,7 +103,7 @@ class ApiService {
 
   /// [추가] 인증번호 검증 요청
   static Future<bool> verifyAuthCode(String userid, String code) async {
-    final url = Uri.parse('$_prodUrl/member/auth/verify-code');
+    final url = Uri.parse('$baseUrl/member/auth/verify-code');
 
     try {
       final response = await http.post(
@@ -114,7 +127,7 @@ class ApiService {
 
   /// 기기 등록 요청 (최종 인증 후 호출)
   static Future<bool> registerDevice(String userid, String password, String deviceId) async {
-    final url = Uri.parse('$_prodUrl/member/register-device');
+    final url = Uri.parse('$baseUrl/member/register-device');
 
     try {
       final response = await http.post(

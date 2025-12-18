@@ -7,20 +7,20 @@ import 'package:test_main/models/cust_acct.dart';
 import 'package:test_main/models/cust_info.dart';
 import 'package:test_main/screens/app_colors.dart';
 import 'package:test_main/screens/member/signup_22.dart';
+import 'package:test_main/services/signup_service.dart';
 
 import '../../utils/device_manager.dart';
 
 class ElectronicSignaturePage extends StatefulWidget {
   const ElectronicSignaturePage({
     super.key,
-    required this.contractMethod, required this.custInfo, required this.custAcct,
+    required this.custInfo, required this.custAcct,
   });
 
   final CustInfo custInfo;
   final CustAcct custAcct;
 
 
-  final String contractMethod;
 
   @override
   State<ElectronicSignaturePage> createState() =>
@@ -95,7 +95,7 @@ class _ElectronicSignaturePageState extends State<ElectronicSignaturePage> {
 
                 const SizedBox(height: 24),
 
-                // 🔒 계약 요약
+                // 계약 요약
                 const Text(
                   "입출금 통장 개설 계약",
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -195,7 +195,7 @@ class _ElectronicSignaturePageState extends State<ElectronicSignaturePage> {
             width: double.infinity,
             height: 56,
             child: ElevatedButton(
-              onPressed: _hasSignature ? _onSubmit : null,
+              onPressed: _onSubmit ,
               style: ElevatedButton.styleFrom(
                 backgroundColor: _hasSignature
                     ? AppColors.pointDustyNavy
@@ -219,7 +219,7 @@ class _ElectronicSignaturePageState extends State<ElectronicSignaturePage> {
   }
 
   Future<void> _onSubmit() async {
-    if (_points.isEmpty) return;
+    // if (_points.isEmpty) return;
 
     // 계약 스냅샷 생성
     final contractSnapshot = _buildContractSnapshot(personId);
@@ -230,21 +230,54 @@ class _ElectronicSignaturePageState extends State<ElectronicSignaturePage> {
     // 서버로 보낼 payload
     final payload = {
       "contractSnapshot": contractSnapshot,
-      "signatureImage": signatureBase64,
+      "signatureBase64": signatureBase64,
     };
 
-    // (지금은 서버 대신 로그)
-    debugPrint("📄 Electronic Signature Payload");
-    debugPrint(const JsonEncoder.withIndent('  ').convert(payload));
+    /*
+    final response = await http.post(
+      uri,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode(payload),
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception("회원가입 데이터 전송 실패");
+    }
+     */
 
     // rrn 메모리 폐기 (의미적)
     // widget.rrn = null; // ← final이라 실제 제거는 scope 종료로 처리
 
     widget.custInfo.deviceId = _deviceId;
-    Navigator.push(
-      context, 
-      MaterialPageRoute(builder: (_) => AccountCreateCompletePage(custAcct: widget.custAcct, custInfo: widget.custInfo, contractMethod: widget.contractMethod, ))
-    );
+    debugPrint('📦 custInfo = ${widget.custInfo}');
+
+
+
+    final signupService = SignupService();
+    try {
+      await signupService.submitSignup(
+        widget.custInfo,
+        widget.custAcct,
+      );
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => AccountCreateCompletePage(
+            custAcct: widget.custAcct,
+            custInfo: widget.custInfo,
+          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("회원가입에 실패했습니다.")),
+      );
+    }
+
+
   }
 
 
