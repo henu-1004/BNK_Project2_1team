@@ -9,6 +9,8 @@ class SignupService {
   static const String baseUrl = 'http://34.64.124.33:8080/backend';
   final http.Client _client = http.Client();
 
+  static const String baseUrl2 = "http://10.0.2.2:8080/backend";
+
   Future<void> submitSignup(
       CustInfo custInfo,
       CustAcct custAcct,
@@ -24,6 +26,38 @@ class SignupService {
       final response = await _client
           .post(
         Uri.parse('$baseUrl/member/api/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      )
+          .timeout(const Duration(seconds: 5));
+
+      debugPrint('📡 status = ${response.statusCode}');
+      debugPrint('📡 body = ${response.body}');
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw Exception('회원가입 실패 (${response.statusCode})');
+      }
+    } catch (e, s) {
+      debugPrint('❌ HTTP 요청 예외 발생: $e');
+      debugPrint('$s');
+    }
+
+  }
+
+  Future<void> subSignup(
+      CustInfo custInfo,
+      CustAcct custAcct,
+      ) async {
+    final payload = {
+      "custInfo": custInfo.toJson(),
+      "custAcct": custAcct.toJson(),
+    };
+
+    debugPrint('📦 payload = ${jsonEncode(payload)}');
+
+    try {
+      final response = await _client
+          .post(
+        Uri.parse('$baseUrl2/member/api/register'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(payload),
       )
