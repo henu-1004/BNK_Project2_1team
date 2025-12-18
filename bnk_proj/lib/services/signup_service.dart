@@ -112,7 +112,7 @@ class SignupService {
   }
 
   /// [추가] 인증번호 검증 요청
-  static Future<bool> verifyAuthCodeHp(String userid, String code) async {
+  static Future<bool> verifyAuthCodeHp(String phone, String code) async {
     final url = Uri.parse('$authUrl/member/auth/verify-code-hp');
 
     try {
@@ -120,7 +120,7 @@ class SignupService {
         url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
-          "userid": userid,
+          "phone": phone,
           "code": code
         }),
       );
