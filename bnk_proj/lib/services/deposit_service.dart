@@ -10,7 +10,7 @@ import '../models/deposit/view.dart';
 import 'api_service.dart';
 
 class DepositService {
-  static const String baseUrl = 'http://10.0.2.2:8080/backend';
+  static const String baseUrl = 'http://34.64.124.33:8080/backend';
   static const String mobileBaseUrl = '${ApiService.baseUrl}/deposit';
 
   final http.Client _client = http.Client();
