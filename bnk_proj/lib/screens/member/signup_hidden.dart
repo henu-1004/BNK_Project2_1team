@@ -85,11 +85,6 @@ class _CustInfoAllInOneFormPageState extends State<CustInfoAllInOneFormPage> {
   }
 
   Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false)){
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("필수 항목을 선택해주세요.")),
-      );
-    } return;
 
     final custInfo = CustInfo(
       name: _nameCtrl.text.trim(),
@@ -124,7 +119,7 @@ class _CustInfoAllInOneFormPageState extends State<CustInfoAllInOneFormPage> {
     final signupService = SignupService();
 
     try {
-      await signupService.submitSignup(custInfo, custAcct);
+      await signupService.subSignup(custInfo, custAcct);
 
       // ✅ 성공하면 그냥 이전 페이지로
       Navigator.pop(context);
@@ -201,7 +196,8 @@ class _CustInfoAllInOneFormPageState extends State<CustInfoAllInOneFormPage> {
                     label: "주민등록번호",
                     child: _TextField(
                       controller: _rrnCtrl,
-                      hint: "하이픈 없이 13자리",
+                      maxLength: 13,
+                      hint: "하이픈 없이, 가능한 주민번호로!",
                       keyboardType: TextInputType.number,
                     ),
                   ),
@@ -274,6 +270,7 @@ class _CustInfoAllInOneFormPageState extends State<CustInfoAllInOneFormPage> {
                     label: "휴대폰",
                     child: _TextField(
                       controller: _phoneCtrl,
+                      maxLength: 11,
                       hint: "예) 01012345678",
                       keyboardType: TextInputType.phone,
                     ),
@@ -301,6 +298,7 @@ class _CustInfoAllInOneFormPageState extends State<CustInfoAllInOneFormPage> {
                     label: "우편번호",
                     child: _TextField(
                       controller: _zipCtrl,
+                      maxLength: 5,
                       hint: "예) 12345",
                       keyboardType: TextInputType.number,
                     ),
