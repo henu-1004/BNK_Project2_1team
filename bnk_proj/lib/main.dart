@@ -23,6 +23,8 @@ import 'package:test_main/utils/device_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:test_main/models/deposit/application.dart';
 
+import 'package:test_main/screens/splash_screen.dart';
+
 
 void main() async{
   // 1. 플러터 엔진 초기화 (비동기 작업 전 필수)
@@ -109,7 +111,7 @@ class MyApp extends StatelessWidget {
         DepositReviewWriteScreen.routeName: (_) =>
         const DepositReviewWriteScreen(),
       },
-      home: const LoginPage(),
+      home: const SplashScreen(),
     );
   }
 }

@@ -136,11 +136,9 @@ class _AuthVerificationScreenState extends State<AuthVerificationScreen> {
       if (!mounted) return;
 
       if (registerSuccess) {
-        _timer?.cancel();
-
-        // ★ 여기가 핵심 분기점입니다 ★
+        // 성공 시 분기 처리
         if (widget.hasPin) {
-          // [CASE A] 이미 PIN이 있는 경우 -> PIN 로그인(검증) 화면으로 이동
+          // [Case 1] 이미 PIN이 있는 경우 -> 로그인(입력) 화면으로 이동
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => PinLoginScreen(userId: widget.userId)),
@@ -149,11 +147,11 @@ class _AuthVerificationScreenState extends State<AuthVerificationScreen> {
             const SnackBar(content: Text('기기 인증 완료! 기존 간편비밀번호로 로그인해주세요.')),
           );
         } else {
-          // [CASE B] PIN이 없는 경우 -> PIN 설정(등록) 화면으로 이동
+          // [Case 2] PIN이 없는 경우 -> 설정(등록) 화면으로 이동
+          // (PinSetupScreen이 아직 없다면 일단 BankHomePage로 보내셔도 됩니다)
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-                builder: (context) => PinSetupScreen(userId: widget.userId)),
+            MaterialPageRoute(builder: (context) => PinSetupScreen(userId: widget.userId)),
           );
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('기기 인증 완료! 사용할 간편비밀번호를 설정해주세요.')),
