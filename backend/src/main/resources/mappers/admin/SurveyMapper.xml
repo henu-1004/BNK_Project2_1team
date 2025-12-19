@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.api.backend.mapper.admin.SurveyMapper">
+
+    <insert id="insertSurvey" parameterType="kr.co.api.backend.dto.admin.survey.SurveyRecord"
+            useGeneratedKeys="true" keyProperty="surveyId" keyColumn="SURVEY_ID">
+        INSERT INTO TB_SURVEY
+        (
+         TITLE,
+         DESCRIPTION,
+         IS_ACTIVE,
+         CREATED_AT,
+         CREATED_BY,
+         UPDATED_AT,
+         UPDATED_BY
+        )
+        VALUES
+        (
+         #{title},
+         #{description},
+         #{isActive},
+         SYSDATE,
+         #{createdBy},
+         SYSDATE,
+         #{updatedBy}
+        )
+    </insert>
+
+    <insert id="insertQuestion" parameterType="kr.co.api.backend.dto.admin.survey.SurveyQuestionRecord"
+            useGeneratedKeys="true" keyProperty="qId" keyColumn="Q_ID">
+        INSERT INTO TB_SURVEY_Q
+        (
+         SURVEY_ID,
+         Q_NO,
+         Q_KEY,
+         Q_TEXT,
+         Q_TYPE,
+         IS_REQUIRED,
+         MAX_SELECT,
+         IS_ACTIVE,
+         CREATED_AT,
+         CREATED_BY,
+         UPDATED_AT,
+         UPDATED_BY
+        )
+        VALUES
+        (
+         #{surveyId},
+         #{qNo},
+         #{qKey},
+         #{qText},
+         #{qType},
+         #{isRequired},
+         #{maxSelect},
+         #{isActive},
+         SYSDATE,
+         #{createdBy},
+         SYSDATE,
+         #{updatedBy}
+        )
+    </insert>
+
+    <insert id="insertOption" parameterType="kr.co.api.backend.dto.admin.survey.SurveyOptionRecord"
+            useGeneratedKeys="true" keyProperty="optId" keyColumn="OPT_ID">
+        INSERT INTO TB_SURVEY_OPT
+        (
+         Q_ID,
+         OPT_CODE,
+         OPT_TEXT,
+         OPT_VALUE,
+         OPT_ORDER,
+         IS_ACTIVE,
+         CREATED_AT,
+         CREATED_BY,
+         UPDATED_AT,
+         UPDATED_BY
+        )
+        VALUES
+        (
+         #{qId},
+         #{optCode},
+         #{optText},
+         #{optValue},
+         #{optOrder},
+         #{isActive},
+         SYSDATE,
+         #{createdBy},
+         SYSDATE,
+         #{createdBy}
+        )
+    </insert>
+
+    <select id="findSurveySummaries" resultType="kr.co.api.backend.dto.admin.survey.SurveySummaryDto">
+        SELECT s.SURVEY_ID,
+               s.TITLE,
+               s.DESCRIPTION,
+               s.IS_ACTIVE,
+               NVL(q.Q_COUNT, 0) AS QUESTION_COUNT,
+               s.UPDATED_AT
+        FROM TB_SURVEY s
+                 LEFT JOIN (
+            SELECT SURVEY_ID, COUNT(*) AS Q_COUNT
+            FROM TB_SURVEY_Q
+            GROUP BY SURVEY_ID
+        ) q ON s.SURVEY_ID = q.SURVEY_ID
+        ORDER BY s.SURVEY_ID DESC
+    </select>
+
+</mapper>
