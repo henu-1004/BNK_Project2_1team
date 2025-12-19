@@ -182,8 +182,8 @@ class ApiService {
     }
   }
 
-  /// [STEP 5] 생체인증 사용 여부 설정
-  static Future<bool> toggleBioAuth(String userid, bool useYn) async {
+  /// [STEP 5] 생체인증 사용 여부 설정 (통합 수정본)
+  static Future<bool> toggleBioAuth(String userid, bool useBio) async {
     final url = Uri.parse('$currentUrl/member/auth/toggle-bio');
 
     try {
@@ -192,12 +192,23 @@ class ApiService {
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "userid": userid,
-          "useYn": useYn ? "Y" : "N",
+          // JSON 표준인 true/false로 보냅니다. (백엔드에서 Boolean으로 받음)
+          "useBio": useBio,
         }),
       );
-      final result = jsonDecode(utf8.decode(response.bodyBytes));
-      return result['status'] == 'SUCCESS';
+
+      // 응답 코드와 내용을 모두 확인하여 안정성 확보
+      if (response.statusCode == 200) {
+        // 혹시 백엔드가 { "status": "SUCCESS" } 형태를 준다면 파싱, 아니면 그냥 true
+        if (response.body.isNotEmpty) {
+          final result = jsonDecode(utf8.decode(response.bodyBytes));
+          return result['status'] == 'SUCCESS';
+        }
+        return true; // 내용 없이 200 OK만 오는 경우
+      }
+      return false;
     } catch (e) {
+      print("생체인증 설정 오류: $e");
       return false;
     }
   }
@@ -230,4 +241,6 @@ class ApiService {
       return {'status': 'ERROR', 'message': '서버 연결 실패'};
     }
   }
+
+
 }

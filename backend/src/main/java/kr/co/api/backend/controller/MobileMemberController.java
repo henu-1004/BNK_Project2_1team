@@ -43,6 +43,8 @@ public class MobileMemberController {
         private String deviceId;
     }
 
+
+
     /*
      * [STEP 0] 스플래시 화면용 기기 일치 여부 확인
      * 로그인 전에 저장된 아이디와 현재 기기 ID가 DB와 일치하는지 단순 확인
@@ -241,19 +243,35 @@ public class MobileMemberController {
         }
     }
 
-    /*
-     * [STEP 5] 생체인증 사용 여부 설정
+    /**
+     * [설정] 생체인증 사용 여부 토글 (DB 반영)
      */
     @PostMapping("/auth/toggle-bio")
-    public ResponseEntity<?> toggleBio(@RequestBody Map<String, String> request) {
-        String userId = request.get("userid");
-        String useYn = request.get("useYn"); // 'Y' 또는 'N'
-
+    public ResponseEntity<?> toggleBio(@RequestBody Map<String, Object> request) {
         try {
-            mobileAuthService.updateBioAuth(userId, useYn);
-            return ResponseEntity.ok(Map.of("status", "SUCCESS"));
+            String userId = (String) request.get("userid");
+
+            // 앱에서 온 true/false를 'Y'/'N'으로 변환
+            Boolean useBio = (Boolean) request.get("useBio");
+            String useYn = (useBio != null && useBio) ? "Y" : "N";
+
+            log.info("생체인증 설정 변경 요청: User={}, Status={}", userId, useYn);
+
+            // 서비스 호출하여 DB 업데이트
+            mobileMemberService.updateBioAuth(userId, useYn);
+
+            // 성공 응답
+            return ResponseEntity.ok(Map.of(
+                    "status", "SUCCESS",
+                    "message", "설정이 저장되었습니다."
+            ));
+
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("message", "설정 변경 실패"));
+            log.error("생체인증 설정 실패", e);
+            return ResponseEntity.status(500).body(Map.of(
+                    "status", "ERROR",
+                    "message", "서버 오류가 발생했습니다."
+            ));
         }
     }
 
