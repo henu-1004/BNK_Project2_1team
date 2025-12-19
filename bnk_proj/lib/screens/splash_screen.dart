@@ -20,12 +20,12 @@ class _SplashScreenState extends State<SplashScreen> {
     _checkLoginStatus();
   }
 
-  // [핵심 로직] 저장된 아이디가 있는지 확인하고 화면 이동
+  // [핵심 로직] 저장된 아이디 확인 + 기기 검증 + 인증 방식 분기
   void _checkLoginStatus() async {
-    // 1. 아주 잠깐 대기 (로고 보여줄 시간 & 스토리지 로딩 시간 확보)
+    // 1. 로딩 시간 확보
     await Future.delayed(const Duration(milliseconds: 1500));
 
-    // 2. 필요한 정보 조회 (저장된 ID, 현재 기기 ID)
+    // 2. 저장된 정보 조회
     const storage = FlutterSecureStorage();
     String? savedId = await storage.read(key: 'saved_userid');
     String deviceId = await DeviceManager.getDeviceId();
@@ -33,21 +33,52 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     if (savedId != null && savedId.isNotEmpty) {
-      // [Case A] 저장된 아이디가 있음 -> ★ 서버에 기기 일치 여부 확인
-      bool isMatch = await ApiService.checkDeviceMatch(savedId, deviceId);
+      // [Case A] 저장된 아이디 있음 -> ★ 서버에 상태 확인 (Map으로 받음)
+      Map<String, dynamic> result = await ApiService.checkDeviceStatus(savedId, deviceId);
 
-      if (isMatch) {
-        // 기기 검증 성공 -> 간편 로그인(PIN) 화면으로
-        print("기기 검증 완료: $savedId -> PIN 화면 이동");
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => PinLoginScreen(userId: savedId)),
-        );
+      if (result['status'] == 'MATCH') {
+        // ✅ 기기 일치! -> 상세 설정 확인
+        bool useBio = result['useBio'] ?? false; // 생체인증 동의 여부
+        bool hasPin = result['hasPin'] ?? false; // PIN 번호 설정 여부
+
+        print("✅ 기기 검증 완료 (Bio: $useBio, PIN: $hasPin)");
+
+        if (useBio) {
+          // [경로 1] 생체인증 사용자 -> PIN 화면으로 가면서 자동 인증 실행
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PinLoginScreen(
+                userId: savedId,
+                autoBioAuth: true, // ★ 중요: 들어가자마자 지문 팝업 띄우기
+              ),
+            ),
+          );
+        } else if (hasPin) {
+          // [경로 2] PIN만 있는 사용자 -> PIN 입력 화면 대기
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PinLoginScreen(
+                userId: savedId,
+                autoBioAuth: false,
+              ),
+            ),
+          );
+        } else {
+          // [경로 3] 기기는 맞는데 인증수단(PIN/Bio)이 없음 -> 로그인 화면으로 보내서 설정 유도
+          print("인증 수단 미설정 -> 로그인 화면 이동");
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+          );
+        }
       } else {
-        // 기기 불일치 (다른 폰에서 복사해왔거나 정보가 변경됨)
-        print("기기 정보 불일치 -> 정보 삭제 후 로그인 화면 이동");
-        await storage.delete(key: 'saved_userid'); // 보안을 위해 잘못된 정보 삭제
+        // 기기 불일치
+        print("기기 불일치 -> 정보 삭제");
+        await storage.delete(key: 'saved_userid');
 
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('기기 정보가 변경되어 다시 로그인이 필요합니다.')),
         );
@@ -58,7 +89,7 @@ class _SplashScreenState extends State<SplashScreen> {
         );
       }
     } else {
-      // [Case B] 저장된 아이디 없음 -> 일반 로그인 화면으로
+      // [Case B] 저장된 아이디 없음 -> 로그인 화면
       print("저장된 정보 없음 -> 로그인 화면 이동");
       Navigator.pushReplacement(
         context,
