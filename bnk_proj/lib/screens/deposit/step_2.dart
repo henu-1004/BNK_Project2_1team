@@ -30,6 +30,7 @@ class _DepositStep2ScreenState extends State<DepositStep2Screen> {
   final DepositDraftService _draftService = const DepositDraftService();
   late Future<_Step2Data> _initFuture;
   final NumberFormat _amountFormat = NumberFormat.decimalPattern();
+  _Step2Data? _cachedData;
 
   DepositContext? _context;
 
@@ -77,6 +78,10 @@ class _DepositStep2ScreenState extends State<DepositStep2Screen> {
     return FutureBuilder<_Step2Data>(
       future: _initFuture,
       builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            _cachedData != null) {
+          return _buildScaffold(_cachedData!.product);
+        }
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             backgroundColor: AppColors.backgroundOffWhite,
@@ -112,10 +117,11 @@ class _DepositStep2ScreenState extends State<DepositStep2Screen> {
           );
         }
 
-        _context ??= snapshot.data!.context;
+        _cachedData = snapshot.data!;
+        _context ??= _cachedData!.context;
 
-        return _buildScaffold(snapshot.data!.product);
-      },
+        return _buildScaffold(_cachedData!.product);
+        },
     );
   }
 
