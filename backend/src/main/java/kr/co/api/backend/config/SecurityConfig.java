@@ -53,6 +53,7 @@ public class SecurityConfig {
                                 .requestMatchers("/exchange/step1").authenticated()
                                 .requestMatchers("/exchange/step2").authenticated()
                                 .requestMatchers("/exchange/step3").authenticated()
+                                .requestMatchers("/api/exchange/**").authenticated()
                                 .requestMatchers("/deposit/deposit_step1").authenticated()
                                 .requestMatchers("/deposit/deposit_step2").authenticated()
                                 .requestMatchers("/deposit/deposit_step3").authenticated()

@@ -25,35 +25,19 @@ public class OnlineExchangeController {
     public ResponseEntity<?> onlineExchange(
             @RequestBody FrgnExchOnlineDTO dto
     ) {
-        /* =========================
-           1. 로그인 사용자(userId) 조회
-           ========================= */
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null ||
-                !(authentication.getPrincipal() instanceof CustomUserDetails)) {
-            return ResponseEntity
-                    .status(401)
-                    .body("인증 정보가 없습니다.");
-        }
-
         CustomUserDetails user =
-                (CustomUserDetails) authentication.getPrincipal();
+                (CustomUserDetails) SecurityContextHolder
+                        .getContext()
+                        .getAuthentication()
+                        .getPrincipal();
 
-        // JWT subject = 로그인 userId
         String userId = user.getUsername();
 
-        /* =========================
-           2. 온라인 환전 처리
-           ========================= */
         onlineExchangeService.processOnlineExchange(dto, userId);
 
-        /* =========================
-           3. 응답
-           ========================= */
         return ResponseEntity.ok("온라인 환전이 정상적으로 처리되었습니다.");
     }
+
 
 
 
@@ -61,16 +45,13 @@ public class OnlineExchangeController {
     public ResponseEntity<?> getMyExchangeAccounts(
             @RequestParam String currency
     ) {
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails user =
+                (CustomUserDetails) SecurityContextHolder
+                        .getContext()
+                        .getAuthentication()
+                        .getPrincipal();
 
-        if (authentication == null ||
-                !(authentication.getPrincipal() instanceof CustomUserDetails)) {
-            return ResponseEntity.status(401).body("인증 정보가 없습니다.");
-        }
-
-        String userId =
-                ((CustomUserDetails) authentication.getPrincipal()).getUsername();
+        String userId = user.getUsername();
 
         Map<String, Object> result =
                 onlineExchangeService.getMyExchangeAccounts(userId, currency);
