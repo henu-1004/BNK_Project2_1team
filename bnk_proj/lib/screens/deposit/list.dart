@@ -18,7 +18,7 @@ class DepositListPage extends StatefulWidget {
 
 class _DepositListPageState extends State<DepositListPage> {
   final DepositService _service = DepositService();
-  final DepositDraftService _draftService = const DepositDraftService();
+  final DepositDraftService _draftService =  DepositDraftService();
   late Future<List<DepositProductList>> _futureProducts;
 
   @override

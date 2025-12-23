@@ -9,9 +9,9 @@ class DepositStep3Screen extends StatelessWidget {
   static const routeName = "/deposit-step3";
 
   final DepositApplication application;
-  final DepositDraftService _draftService = const DepositDraftService();
+  final DepositDraftService _draftService = DepositDraftService();
 
-  const DepositStep3Screen({
+   DepositStep3Screen({
     super.key,
     required this.application,
   });

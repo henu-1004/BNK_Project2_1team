@@ -9,7 +9,7 @@ import 'deposit_service.dart';
 
 /// 외화예금 가입 진행 상황을 임시 저장/조회하는 로컬+원격 서비스
 class DepositDraftService {
-  const DepositDraftService();
+   DepositDraftService();
 
   static const _storage = FlutterSecureStorage();
   static const _tokenKey = 'auth_token';

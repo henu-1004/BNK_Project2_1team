@@ -28,7 +28,7 @@ class DepositStep2Screen extends StatefulWidget {
 class _DepositStep2ScreenState extends State<DepositStep2Screen> {
 
   final DepositService _service = DepositService();
-  final DepositDraftService _draftService = const DepositDraftService();
+  final DepositDraftService _draftService =  DepositDraftService();
   late Future<_Step2Data> _initFuture;
   final NumberFormat _amountFormat = NumberFormat.decimalPattern();
   final DateFormat _ymd = DateFormat('yyyyMMdd');
@@ -1240,13 +1240,11 @@ class _DepositStep2ScreenState extends State<DepositStep2Screen> {
     try {
       final fetched = await _service.fetchProductDetail(widget.application.dpstId);
       product = fetched;
-      debugPrint('[DepositStep2] 상품 상세 조회 성공: ${product.name}');
     } catch (e, stack) {
       debugPrint('[DepositStep2] 상품 상세 조회 실패: $e');
       debugPrintStack(stackTrace: stack);
 
       if (product == null) {
-        debugPrint('[DepositStep2] 사용할 기존 상품 정보가 없어 예외를 발생시킵니다.');
         throw Exception('상품 정보를 불러오지 못했습니다.');
       }
 
@@ -1256,7 +1254,6 @@ class _DepositStep2ScreenState extends State<DepositStep2Screen> {
     DepositContext context;
     try {
       context = await _service.fetchContext();
-      debugPrint('[DepositStep2] 사용자 컨텍스트 조회 성공: ${context.customerName}');
     } catch (e, stack) {
       debugPrint('[DepositStep2] 사용자 컨텍스트 조회 실패: $e');
       debugPrintStack(stackTrace: stack);
@@ -1269,7 +1266,6 @@ class _DepositStep2ScreenState extends State<DepositStep2Screen> {
       fetchedFxRates = {
         for (final rate in rates) rate.code.toUpperCase(): rate.rate,
       };
-      debugPrint('[DepositStep2] 환율 조회 성공: ${fetchedFxRates.length}개 통화');
     } catch (e, stack) {
       debugPrint('[DepositStep2] 환율 조회 실패: $e');
       debugPrintStack(stackTrace: stack);

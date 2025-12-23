@@ -39,7 +39,7 @@ class _DepositViewScreenState extends State<DepositViewScreen> {
   late Future<model.DepositProduct> _futureProduct;
   final TermsService _termsService = TermsService();
   late Future<List<TermsDocument>> _futureTerms;
-  final DepositDraftService _draftService = const DepositDraftService();
+  final DepositDraftService _draftService = DepositDraftService();
   bool _canResume = false;
 
   @override

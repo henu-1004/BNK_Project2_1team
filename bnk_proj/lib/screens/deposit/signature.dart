@@ -38,7 +38,7 @@ class _DepositSignatureScreenState extends State<DepositSignatureScreen> {
   String? _selectedMethod;
   Uint8List? _certificateImage;
 
-  final DepositDraftService _draftService = const DepositDraftService();
+  final DepositDraftService _draftService =  DepositDraftService();
 
   bool _agreeAll = false;
 

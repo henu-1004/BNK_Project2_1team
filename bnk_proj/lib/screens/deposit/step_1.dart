@@ -58,7 +58,7 @@ class _DepositStep1ScreenState extends State<DepositStep1Screen> {
 
   bool finalAgree = false;
 
-  final DepositDraftService _draftService = const DepositDraftService();
+  final DepositDraftService _draftService =  DepositDraftService();
 
   @override
   void initState() {
