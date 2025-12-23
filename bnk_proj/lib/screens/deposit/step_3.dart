@@ -22,6 +22,11 @@ class DepositStep3Screen extends StatelessWidget {
     final productName = application.product?.name ?? application.dpstId;
     final formatter = NumberFormat.decimalPattern();
 
+    final krwAmountLabel = _resolveKrwDepositAmountLabel(
+      application,
+      formatter,
+    );
+
     final withdrawAccountLabel = application.withdrawType == "fx"
         ? (application.selectedFxAccount ?? "미입력")
         : (application.selectedKrwAccount ?? "미입력");
@@ -78,6 +83,7 @@ class DepositStep3Screen extends StatelessWidget {
                   ? application.newCurrency
                   : "미입력"],
               ["신규 금액", amountLabel],
+              ["원화 환산 금액", krwAmountLabel],
               ["가입기간", periodLabel],
               ["예금이율", rateLabel],
               ["만기일", maturityLabel],
@@ -335,4 +341,24 @@ class DepositStep3Screen extends StatelessWidget {
 
     return "-";
   }
+
+  String _resolveKrwDepositAmountLabel(
+      DepositApplication application,
+      NumberFormat formatter,
+      ) {
+    final amount = application.newAmount?.toDouble();
+    if (amount == null) return "미입력";
+
+    final currency = application.newCurrency.toUpperCase();
+    if (currency == "KRW" || currency.isEmpty) {
+      return "KRW ${formatter.format(amount)}";
+    }
+
+    final rate = application.appliedFxRate;
+    if (rate == null) return "미입력";
+
+    final krwAmount = amount * rate;
+    return "KRW ${formatter.format(krwAmount)}";
+  }
+
 }
