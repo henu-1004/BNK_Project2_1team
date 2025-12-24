@@ -12,25 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RateController {
 
-    private final RateQueryService rateQueryService;
 
-    /**
-     * 환율 목록 (통화별 최신 1건)
-     */
-    @GetMapping("/rates")
-    public List<RateDTO> getRates() {
-        return rateQueryService.getLatestRates();
-    }
-
-    /**
-     * 특정 통화 환율 히스토리
-     */
-    @GetMapping("/rates/{currency}")
-    public List<RateDTO> getRateHistory(
-            @PathVariable String currency
-    ) {
-        return rateQueryService.getRateHistory(currency);
-    }
 
 
 }

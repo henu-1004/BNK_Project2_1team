@@ -3,15 +3,17 @@ package kr.co.api.backend.config;
 import kr.co.api.backend.jwt.JwtAuthenticationFilter;
 import kr.co.api.backend.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -20,55 +22,73 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
-
-    @Value("${security.remember-me.seconds:0}")
-    private int rememberMeSeconds;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint; // 웹용 리다이렉트 핸들러
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // 📱 1. 모바일 API용 시큐리티 설정 (API는 JSON 응답/401 에러 필요)
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable()) // JWT 사용 시 CSRF 비활성화 가능 (쿠키 사용 시엔 켜는 게 좋지만, 지금은 복잡도 줄이기 위해 끔)
-                .formLogin(form -> form.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 안 씀
-                .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/",
-                                        "/member/login",
-                                        "/member/register",
-                                        "/css/**",
-                                        "/js/**", "/images/**",
-                                        "/mypage/chatbot",
-                                        "/remit/info",
-                                        "/admin/login",
-                                        "/api/exchange/**"
-                                ).permitAll()
-//                        .requestMatchers("/admin/**").hasRole("ADMIN")  //이게 걸린거
-                                .requestMatchers("/admin/**").permitAll()   //이게 안걸린거 (개발용)
-                                .requestMatchers("/mypage/**").authenticated() // 마이페이지는 로그인 필요
-                                .requestMatchers("/remit/**").authenticated()
-                                .requestMatchers("/exchange/step1").authenticated()
-                                .requestMatchers("/exchange/step2").authenticated()
-                                .requestMatchers("/exchange/step3").authenticated()
-                                .requestMatchers("/deposit/deposit_step1").authenticated()
-                                .requestMatchers("/deposit/deposit_step2").authenticated()
-                                .requestMatchers("/deposit/deposit_step3").authenticated()
-                                .requestMatchers("/deposit/deposit_step4").authenticated()
-                                .requestMatchers("/customer/qna_write/**").authenticated()
-                                .requestMatchers("/customer/qna_edit/**").authenticated()
-                                .requestMatchers("/customer/qna_delete/**").authenticated()
-                                .requestMatchers("/member/**").permitAll()
-                                .requestMatchers("/uploads/**").permitAll()
+    @Order(1)
+    public SecurityFilterChain mobileFilterChain(HttpSecurity http) throws Exception {
 
-                                .anyRequest().permitAll() // 일단 나머지는 다 허용 (개발 편의상)
+        http
+                .securityMatcher("/api/mobile/**")
+                .csrf(csrf -> csrf.disable())
+                .formLogin(form -> form.disable())
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                // 우리가 만든 필터를 UsernamePasswordAuthenticationFilter 앞에 끼워넣기
+                .authorizeHttpRequests(auth -> auth
+                        // 🔓 로그인, 회원가입 관련 허용
+                        .requestMatchers(
+                                "/api/mobile/member/login",
+                                "/api/mobile/member/auth/**"
+                        ).permitAll()
+
+                        // 🔓 환율 조회 API는 로그인 없이 허용
+                        .requestMatchers(
+                                "/api/mobile/exchange/rates",       // 전체 환율
+                                "/api/mobile/exchange/rates/**"     // 특정 통화 히스토리
+                        ).permitAll()
+
+                        // 🔐 나머지는 전부 인증 필요 (환전 신청, 계좌 조회 등)
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(
+                        new JwtAuthenticationFilter(jwtTokenProvider),
+                        UsernamePasswordAuthenticationFilter.class
+                )
+                // 모바일은 로그인 페이지 리다이렉트가 아닌 401 에러 코드 반환
+                .exceptionHandling(exception ->
+                        exception.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                );
+
+        return http.build();
+    }
+
+    // 💻 2. 웹(Web)용 시큐리티 설정 (웹은 로그인 페이지 리다이렉트 필요)
+    @Bean
+    @Order(2)
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(csrf -> csrf.disable())
+                .formLogin(form -> form.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/", "/member/**", "/css/**", "/js/**", "/images/**",
+                                "/uploads/**", "/api/register"
+                        ).permitAll()
+                        .requestMatchers("/admin/**").permitAll() // 개발용
+                        .anyRequest().authenticated()
+                )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(customAuthenticationEntryPoint)   // ★ 미인증 사용자// ★ 권한 부족
+                // 웹은 인증 실패 시 로그인 페이지로 이동 (기존 클래스 사용)
+                .exceptionHandling(exception ->
+                        exception.authenticationEntryPoint(customAuthenticationEntryPoint)
                 );
 
         return http.build();

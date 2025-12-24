@@ -47,10 +47,15 @@ class RateDTO {
 }
 
 Future<List<RateDTO>> fetchLatestRates() async {
-  final headers = await ApiService.getAuthHeaders();
+  // 기본 헤더만 사용
+  final headers = {
+    "Content-Type": "application/json",
+  };
 
   final baseUrl =
-  ApiService.currentUrl.replaceFirst('/api/mobile', '/api/exchange');
+  Uri.parse(
+      '${ApiService.currentUrl}/exchange'
+  );
 
   final url = Uri.parse('$baseUrl/rates');
 
@@ -72,8 +77,13 @@ Future<List<RateDTO>> fetchLatestRates() async {
     throw Exception("환율 조회 실패: ${res.statusCode} ${res.body}");
   }
 
-  final List list = jsonDecode(utf8.decode(res.bodyBytes));
-  return list.map((e) => RateDTO.fromJson(e)).toList();
+  // 빈 리스트가 올 경우를 대비해 타입 체크를 강화
+  final decoded = jsonDecode(utf8.decode(res.bodyBytes));
+  if (decoded is List) {
+    return decoded.map((e) => RateDTO.fromJson(e)).toList();
+  } else {
+    return [];
+  }
 }
 
 
