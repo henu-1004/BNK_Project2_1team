@@ -6,6 +6,7 @@ import '../../app_colors.dart';
 import 'security_settings_screen.dart';
 import '../../../utils/device_manager.dart';
 import '../../auth/pin_setup_screen.dart';
+import 'package:local_auth_android/local_auth_android.dart';
 
 class SecuritySettingsScreen extends StatefulWidget {
   const SecuritySettingsScreen({super.key});
@@ -84,6 +85,14 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         // 실제 지문 인증 시도 (본인 확인)
         bool didAuthenticate = await auth.authenticate(
           localizedReason: '생체 인증을 활성화하기 위해 본인 인증이 필요합니다.',
+
+          authMessages: const <AuthMessages>[
+            AndroidAuthMessages(
+              signInTitle: '본인 확인', // 상황에 맞게 문구를 다르게 설정하면 더 좋습니다.
+              cancelButton: '취소',
+            ),
+          ],
+
           options: const AuthenticationOptions(biometricOnly: true),
         );
 

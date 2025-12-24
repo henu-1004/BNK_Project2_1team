@@ -6,6 +6,7 @@ import '../../services/api_service.dart';
 import '../main/bank_homepage.dart';
 import '../app_colors.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:local_auth_android/local_auth_android.dart';
 
 class PinLoginScreen extends StatefulWidget {
   final String userId;
@@ -28,7 +29,7 @@ class _PinLoginScreenState extends State<PinLoginScreen> {
   @override
   void initState() {
     super.initState();
-    // ★ 자동 생체인증 옵션이 켜져있으면, 화면 빌드 후 지문 창 띄우기
+    // 자동 생체인증 옵션이 켜져있으면, 화면 빌드 후 지문 창 띄우기
     if (widget.autoBioAuth) {
       _authenticateBio();
     }
@@ -43,6 +44,15 @@ class _PinLoginScreenState extends State<PinLoginScreen> {
       // 2. 인증 시도 (시스템 팝업)
       authenticated = await auth.authenticate(
         localizedReason: '로그인하려면 지문 또는 Face ID로 인증해주세요.',
+
+        // 생체 인증 문구
+        authMessages: const <AuthMessages>[
+          AndroidAuthMessages(
+            signInTitle: '생체 인증', // 'Authentication required' 대신 나올 문구
+            cancelButton: '취소',
+          ),
+        ],
+
         options: const AuthenticationOptions(
           stickyAuth: true, // 앱이 잠깐 백그라운드 갔다 와도 인증창 유지
           biometricOnly: true, // PIN/패턴 말고 생체정보만 사용

@@ -85,8 +85,15 @@ public class JwtTokenProvider {
 
     }
 
-    // 3. 쿠키에서 토큰 추출
+    // 3. 토큰 추출 (헤더와 쿠키 모두 확인)
     public String resolveToken(HttpServletRequest request) {
+        // 1. 헤더에서 검색 (주로 모바일 앱/API 요청)
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+
+        // 2. 쿠키에서 검색 (웹 브라우저 요청)
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {

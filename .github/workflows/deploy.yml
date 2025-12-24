@@ -134,5 +134,5 @@ jobs:
             sudo docker-compose up -d --build
 
             # 5. 불필요한 이미지 정리
-            sudo docker image prune -f
+            sudo docker system prune -af
           "
