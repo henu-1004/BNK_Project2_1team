@@ -1,0 +1,78 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.api.backend.mapper.admin.SurveyAdminMapper">
+
+    <select id="selectSurveyList"
+            resultType="kr.co.api.backend.dto.admin.survey.SurveySummaryDTO">
+        SELECT
+            s.survey_id AS surveyId,
+            s.title AS title,
+            s.description AS description,
+            s.is_active AS isActive,
+            s.created_at AS createdAt,
+            s.created_by AS createdBy,
+            s.updated_at AS updatedAt,
+            s.updated_by AS updatedBy,
+            (
+                SELECT COUNT(*)
+                FROM TB_SURVEY_Q q
+                WHERE q.survey_id = s.survey_id
+            ) AS questionCount
+        FROM TB_SURVEY s
+        ORDER BY s.survey_id DESC
+    </select>
+
+    <select id="selectSurveyById"
+            resultType="kr.co.api.backend.dto.admin.survey.SurveySummaryDTO">
+        SELECT
+            s.survey_id AS surveyId,
+            s.title AS title,
+            s.description AS description,
+            s.is_active AS isActive,
+            s.created_at AS createdAt,
+            s.created_by AS createdBy,
+            s.updated_at AS updatedAt,
+            s.updated_by AS updatedBy,
+            (
+                SELECT COUNT(*)
+                FROM TB_SURVEY_Q q
+                WHERE q.survey_id = s.survey_id
+            ) AS questionCount
+        FROM TB_SURVEY s
+        WHERE s.survey_id = #{surveyId}
+    </select>
+
+    <insert id="insertSurvey"
+            parameterType="kr.co.api.backend.dto.admin.survey.SurveySaveDTO"
+            useGeneratedKeys="true"
+            keyProperty="surveyId"
+            keyColumn="survey_id">
+        INSERT INTO TB_SURVEY (
+            title,
+            description,
+            is_active,
+            created_by,
+            updated_by
+        ) VALUES (
+            #{title},
+            #{description},
+            #{isActive},
+            #{createdBy},
+            #{updatedBy}
+        )
+    </insert>
+
+    <update id="updateSurvey"
+            parameterType="kr.co.api.backend.dto.admin.survey.SurveySaveDTO">
+        UPDATE TB_SURVEY
+        SET
+            title = #{title},
+            description = #{description},
+            is_active = #{isActive},
+            updated_by = #{updatedBy}
+        WHERE survey_id = #{surveyId}
+    </update>
+
+</mapper>
