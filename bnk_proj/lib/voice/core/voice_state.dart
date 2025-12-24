@@ -14,9 +14,11 @@ enum VoiceState {
   s5End;
 
   static VoiceState from(String value) {
+    final normalized = value.replaceAll('_', '').toLowerCase();
+
     return VoiceState.values.firstWhere(
-          (e) => e.name.toUpperCase() == value.toUpperCase(),
-      orElse: () => VoiceState.s0Idle, // fallback
+          (e) => e.name.toLowerCase() == normalized,
+      orElse: () => VoiceState.s0Idle,
     );
   }
 }

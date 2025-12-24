@@ -35,16 +35,20 @@ class VoiceSessionController {
     required VoiceSttService stt,
     required VoiceTtsService tts,
   })  : _stt = stt,
-        _tts = tts;
+        _tts = tts {
+    _startInternal();
+  }
 
-  /// 1️⃣ 음성 세션 시작
-  Future<void> start() async {
+
+  Future<void> _startInternal() async {
     _sessionId = _generateSessionId();
 
     uiState.value = VoiceUiState.speaking;
     await _playScript(initial: true);
     uiState.value = VoiceUiState.idle;
   }
+
+
 
   void startListening() {
     uiState.value = VoiceUiState.listening;

@@ -845,8 +845,6 @@ List<ServiceHighlight> buildAiAndFxServices(BuildContext context) => [
         context,
         controller,
       );
-
-      controller.start(); // 🔊 세션 시작 + 첫 음성
     },
 
   ),
