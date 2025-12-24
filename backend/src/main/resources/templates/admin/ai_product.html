@@ -109,6 +109,66 @@
             .search-input-mini { width: 200px; height: 36px; border: 1px solid #ddd; border-radius: 4px; padding: 0 10px; }
             .btn-search-mini { height: 36px; padding: 0 15px; background: #22304e; color: #fff; border:none; border-radius: 4px; cursor: pointer; }
 
+            /* 설문 등록 모달 */
+            .survey-modal-overlay {
+                position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+                display: none; align-items: center; justify-content: center; z-index: 9999;
+            }
+            .survey-modal-overlay.active { display: flex; }
+            .survey-modal {
+                width: 920px; max-width: 94%;
+                background: #fff; border-radius: 12px;
+                box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+                overflow: hidden;
+            }
+            .survey-modal-header {
+                background: #B7C9E2; color: #3C4F76;
+                padding: 18px 24px; display: flex; align-items: center; justify-content: space-between;
+            }
+            .survey-modal-header h3 { margin: 0; font-size: 18px; font-weight: 700; }
+            .survey-modal-close {
+                border: none; background: transparent; font-size: 24px; cursor: pointer; color: #3C4F76;
+            }
+            .survey-modal-body {
+                background: #FAFAFA; padding: 24px; max-height: 70vh; overflow-y: auto;
+            }
+            .survey-form-section {
+                background: #F7F3EE; border-radius: 10px; padding: 16px; margin-bottom: 16px;
+            }
+            .survey-form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+            .survey-form-row label { font-size: 12px; color: #3C4F76; font-weight: 600; margin-bottom: 4px; display: block; }
+            .survey-input, .survey-select, .survey-textarea {
+                width: 100%; border: 1px solid #d9d9d9; border-radius: 6px; padding: 8px 10px; font-size: 13px;
+                background: #fff;
+            }
+            .survey-textarea { min-height: 80px; resize: vertical; }
+            .survey-col-6 { flex: 1 1 260px; }
+            .survey-col-12 { flex: 1 1 100%; }
+            .survey-question-card {
+                border: 1px solid #e2e2e2; border-radius: 10px; padding: 14px; background: #fff; margin-bottom: 14px;
+            }
+            .survey-question-header {
+                display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+            }
+            .survey-question-title { font-size: 14px; font-weight: 700; color: #3C4F76; }
+            .survey-btn {
+                background: #3C4F76; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer;
+            }
+            .survey-btn-light {
+                background: #fff; color: #3C4F76; border: 1px solid #3C4F76;
+            }
+            .survey-option-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+            .survey-option-row .survey-input { flex: 1; }
+            .survey-modal-footer {
+                padding: 16px 24px; display: flex; justify-content: flex-end; gap: 8px; background: #fff;
+                border-top: 1px solid #eee;
+            }
+            .survey-btn-cancel {
+                background: #fff; color: #3C4F76; border: 1px solid #3C4F76; border-radius: 6px; padding: 8px 14px; cursor: pointer;
+            }
+            .survey-btn-save {
+                background: #3C4F76; color: #fff; border: none; border-radius: 6px; padding: 8px 14px; cursor: pointer;
+            }
         </style>
 
         <div class="board-admin">
@@ -309,12 +369,57 @@
             </section>
         </div>
 
+        <div id="surveyModal" class="survey-modal-overlay" aria-hidden="true">
+            <div class="survey-modal" role="dialog" aria-modal="true" aria-labelledby="surveyModalTitle">
+                <div class="survey-modal-header">
+                    <h3 id="surveyModalTitle">설문 등록</h3>
+                    <button type="button" class="survey-modal-close" aria-label="닫기">×</button>
+                </div>
+                <div class="survey-modal-body">
+                    <div class="survey-form-section">
+                        <div class="survey-form-row">
+                            <div class="survey-col-6">
+                                <label for="surveyTitle">설문 제목</label>
+                                <input type="text" id="surveyTitle" class="survey-input" placeholder="설문 제목을 입력하세요">
+                            </div>
+                            <div class="survey-col-6">
+                                <label for="surveyActive">사용 여부</label>
+                                <select id="surveyActive" class="survey-select">
+                                    <option value="Y">사용</option>
+                                    <option value="N">미사용</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="survey-form-row">
+                            <div class="survey-col-12">
+                                <label for="surveyDescription">설문 설명</label>
+                                <textarea id="surveyDescription" class="survey-textarea" placeholder="설문 설명을 입력하세요"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="survey-form-section">
+                        <div class="survey-question-header">
+                            <div class="survey-question-title">문항 구성</div>
+                            <button type="button" class="survey-btn survey-btn-light" id="addQuestionBtn">문항 추가</button>
+                        </div>
+                        <div id="surveyQuestionList"></div>
+                    </div>
+                </div>
+                <div class="survey-modal-footer">
+                    <button type="button" class="survey-btn-cancel" id="surveyCancelBtn">취소</button>
+                    <button type="button" class="survey-btn-save" id="surveySaveBtn">저장</button>
+                </div>
+            </div>
+        </div>
+
     </section>
 
 </th:block>
 
 <th:block th:fragment="script">
-    <script>
+    <script th:inline="javascript">
+        const baseUrl = [[@{/}]];
         $(document).ready(function() {
             console.log("AI 상품 추천 및 설문 관리 페이지 로드 완료");
 
@@ -324,9 +429,181 @@
             });
 
             $('.btn-create').click(function() {
-                alert('새로운 설문지를 등록하는 팝업이 열립니다.');
+                openSurveyModal();
             });
+
+            $('#surveyCancelBtn, .survey-modal-close').click(function() {
+                closeSurveyModal();
+            });
+
+            $('#surveyModal').on('click', function(event) {
+                if (event.target.id === 'surveyModal') {
+                    closeSurveyModal();
+                }
+            });
+
+            $('#addQuestionBtn').click(function() {
+                addQuestionCard();
+            });
+
+            $('#surveySaveBtn').click(function() {
+                submitSurvey();
+            });
+
+            addQuestionCard();
         });
+
+        function openSurveyModal() {
+            $('#surveyModal').addClass('active').attr('aria-hidden', 'false');
+        }
+
+        function closeSurveyModal() {
+            $('#surveyModal').removeClass('active').attr('aria-hidden', 'true');
+        }
+
+        function addQuestionCard() {
+            const index = $('.survey-question-card').length + 1;
+            const card = $(`
+                <div class="survey-question-card" data-index="${index}">
+                    <div class="survey-question-header">
+                        <div class="survey-question-title">문항 ${index}</div>
+                        <button type="button" class="survey-btn survey-btn-light remove-question">삭제</button>
+                    </div>
+                    <div class="survey-form-row">
+                        <div class="survey-col-12">
+                            <label>질문 내용</label>
+                            <input type="text" class="survey-input question-text" placeholder="질문을 입력하세요">
+                        </div>
+                    </div>
+                    <div class="survey-form-row">
+                        <div class="survey-col-6">
+                            <label>질문 유형</label>
+                            <select class="survey-select question-type">
+                                <option value="SINGLE">단일 선택</option>
+                                <option value="MULTI">다중 선택</option>
+                                <option value="TEXT">주관식</option>
+                            </select>
+                        </div>
+                        <div class="survey-col-6">
+                            <label>필수 여부</label>
+                            <select class="survey-select question-required">
+                                <option value="Y">필수</option>
+                                <option value="N">선택</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="survey-form-row question-multi-row" style="display: none;">
+                        <div class="survey-col-6">
+                            <label>최대 선택 수</label>
+                            <input type="number" class="survey-input question-max" min="1" placeholder="예: 2">
+                        </div>
+                    </div>
+                    <div class="survey-form-row question-option-row">
+                        <div class="survey-col-12">
+                            <label>선택지</label>
+                            <div class="survey-option-list"></div>
+                            <button type="button" class="survey-btn survey-btn-light add-option">선택지 추가</button>
+                        </div>
+                    </div>
+                </div>
+            `);
+            card.find('.remove-question').click(function() {
+                card.remove();
+                renumberQuestions();
+            });
+            card.find('.question-type').change(function() {
+                toggleQuestionType(card, $(this).val());
+            });
+            card.find('.add-option').click(function() {
+                addOptionRow(card.find('.survey-option-list'));
+            });
+            addOptionRow(card.find('.survey-option-list'));
+            $('#surveyQuestionList').append(card);
+            toggleQuestionType(card, card.find('.question-type').val());
+        }
+
+        function renumberQuestions() {
+            $('.survey-question-card').each(function(index) {
+                $(this).attr('data-index', index + 1);
+                $(this).find('.survey-question-title').text(`문항 ${index + 1}`);
+            });
+        }
+
+        function toggleQuestionType(card, type) {
+            if (type === 'TEXT') {
+                card.find('.question-option-row').hide();
+                card.find('.question-multi-row').hide();
+            } else if (type === 'MULTI') {
+                card.find('.question-option-row').show();
+                card.find('.question-multi-row').show();
+            } else {
+                card.find('.question-option-row').show();
+                card.find('.question-multi-row').hide();
+            }
+        }
+
+        function addOptionRow(container) {
+            const count = container.children().length + 1;
+            const row = $(`
+                <div class="survey-option-row">
+                    <input type="text" class="survey-input option-code" placeholder="코드 예: A" value="O${count}">
+                    <input type="text" class="survey-input option-text" placeholder="선택지 텍스트">
+                    <input type="text" class="survey-input option-value" placeholder="값(옵션)">
+                    <button type="button" class="survey-btn survey-btn-light remove-option">삭제</button>
+                </div>
+            `);
+            row.find('.remove-option').click(function() {
+                row.remove();
+            });
+            container.append(row);
+        }
+
+        function submitSurvey() {
+            const payload = {
+                title: $('#surveyTitle').val(),
+                description: $('#surveyDescription').val(),
+                isActive: $('#surveyActive').val(),
+                questions: []
+            };
+
+            $('.survey-question-card').each(function() {
+                const card = $(this);
+                const type = card.find('.question-type').val();
+                const question = {
+                    text: card.find('.question-text').val(),
+                    type: type,
+                    isRequired: card.find('.question-required').val(),
+                    maxSelect: type === 'MULTI' ? parseInt(card.find('.question-max').val(), 10) || null : null,
+                    options: []
+                };
+                if (type !== 'TEXT') {
+                    card.find('.survey-option-row').each(function(index) {
+                        const row = $(this);
+                        question.options.push({
+                            optCode: row.find('.option-code').val() || `O${index + 1}`,
+                            optText: row.find('.option-text').val(),
+                            optValue: row.find('.option-value').val(),
+                            optOrder: index + 1
+                        });
+                    });
+                }
+                payload.questions.push(question);
+            });
+
+            $.ajax({
+                url: `${baseUrl}admin/ai-product/surveys`,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function() {
+                    alert('설문이 저장되었습니다.');
+                    closeSurveyModal();
+                },
+                error: function() {
+                    alert('설문 저장에 실패했습니다.');
+                }
+            });
+        }
     </script>
 </th:block>
 

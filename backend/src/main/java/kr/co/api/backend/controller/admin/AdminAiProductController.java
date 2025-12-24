@@ -1,13 +1,25 @@
 package kr.co.api.backend.controller.admin;
 
+import kr.co.api.backend.dto.SurveyCreateRequestDTO;
+import kr.co.api.backend.service.admin.SurveyService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin") // 이 컨트롤러의 기본 URL 경로
+@RequiredArgsConstructor
 public class AdminAiProductController {
+
+    private final SurveyService surveyService;
 
     /**
      * AI 상품 추천 관리 메인 페이지
@@ -25,5 +37,15 @@ public class AdminAiProductController {
 
         // 3. 실제 보여줄 HTML 파일 경로 (templates/admin/ai_product.html)
         return "admin/ai_product";
+    }
+
+    @PostMapping("/ai-product/surveys")
+    @ResponseBody
+    public Map<String, Object> createSurvey(@RequestBody SurveyCreateRequestDTO request) {
+        Long surveyId = surveyService.createSurvey(request);
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("surveyId", surveyId);
+        return response;
     }
 }
