@@ -37,6 +37,7 @@ class VoiceSessionController {
   bool _started = false; // ⭐ 최초 idle 진입 여부
 
   void attachOverlay() {
+    debugPrint("### attachOverlay called started=$_started sessionId=$_sessionId state=$_state");
     if (_started) return;
 
     _started = true;
@@ -100,6 +101,8 @@ class VoiceSessionController {
 
     if (res.currentState == VoiceState.s2ProductExplain &&
         res.productCode != null) {
+          debugPrint("### emit navCommand openDepositView ${res.productCode}");
+
       navCommand.value = VoiceNavCommand(
         type: VoiceNavType.openDepositView,
         productCode: res.productCode,
@@ -112,12 +115,13 @@ class VoiceSessionController {
       _cleanup();
       return;
     }
-
+    debugPrint("### server res state=${res.currentState} intent=${res.intent} product=${res.productCode}");
     final script = VoiceScriptResolver.resolve(
       state: res.currentState,
       intent: res.intent,
       noticeCode: res.noticeCode,
     );
+     debugPrint("### resolved script=$script");
 
     if (script != null) {
       uiState.value = VoiceUiState.speaking;

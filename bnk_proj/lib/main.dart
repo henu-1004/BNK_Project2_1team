@@ -11,6 +11,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:test_main/services/api_service.dart';
 import 'package:test_main/screens/auth/pin_setup_screen.dart';
+import 'package:test_main/voice/controller/voice_session_controller.dart';
+import 'package:test_main/voice/scope/voice_session_scope.dart';
+import 'package:test_main/voice/service/voice_stt_service.dart';
+import 'package:test_main/voice/service/voice_tts_service.dart';
 
 import 'screens/app_colors.dart';
 import 'screens/main/bank_homepage.dart';
@@ -158,9 +162,21 @@ Future<void> main() async {
   FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
     await showForegroundNotification(message);
   });
+  
+  // 음성 머신 시작점임
+  // VoiceSessionController는 여기서 한 번만 생성
+  final voiceController = VoiceSessionController(
+    stt: VoiceSttService(),
+    tts: VoiceTtsService(),
+  );
 
+  runApp(
+    VoiceSessionScope(
+      controller: voiceController,
+      child: const MyApp(),
+    ),
+  );
 
-  runApp(const MyApp());
 }
 
 Future<void> sendTokenToServer({

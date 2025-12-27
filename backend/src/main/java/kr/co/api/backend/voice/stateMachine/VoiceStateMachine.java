@@ -37,8 +37,7 @@ public class VoiceStateMachine {
             case S1_RECOMMEND ->
                     switch (intent) {
                         case REQ_OTHER   -> VoiceState.S1_RECOMMEND;
-                        case REQ_EXPLAIN -> VoiceState.S2_PROD_EXPLAIN;
-                        case REQ_JOIN    -> VoiceState.S3_JOIN_CONFIRM;
+                        case REQ_EXPLAIN, REQ_JOIN -> VoiceState.S2_PROD_EXPLAIN;
                         default          -> current;
                     };
 

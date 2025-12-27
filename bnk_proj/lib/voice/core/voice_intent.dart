@@ -22,9 +22,37 @@ enum Intent {
   success;
 
   static Intent from(String value) {
-    return Intent.values.firstWhere(
-          (e) => e.name.toUpperCase() == value.toUpperCase(),
-      orElse: () => Intent.unknown,
-    );
+    switch (value) {
+      case 'REQ_RECOMMEND':
+        return Intent.reqRecommend;
+      case 'REQ_OTHER':
+        return Intent.reqOther;
+      case 'REQ_EXPLAIN':
+        return Intent.reqExplain;
+      case 'REQ_JOIN':
+        return Intent.reqJoin;
+
+      case 'AFFIRM':
+        return Intent.affirm;
+      case 'DENY':
+        return Intent.deny;
+
+      case 'PROCEED':
+        return Intent.proceed;
+      case 'CONFIRM':
+        return Intent.confirm;
+
+      case 'REQ_BACK':
+        return Intent.reqBack;
+      case 'REQ_CANCEL':
+        return Intent.reqCancel;
+
+      case 'SUCCESS':
+        return Intent.success;
+
+      default:
+        return Intent.unknown;
+    }
   }
+
 }

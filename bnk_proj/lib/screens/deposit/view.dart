@@ -38,7 +38,7 @@ class _DepositViewScreenState extends State<DepositViewScreen> {
   final DepositService _service =  DepositService();
   late Future<model.DepositProduct> _futureProduct;
   final TermsService _termsService = TermsService();
-  late Future<List<TermsDocument>> _futureTerms;
+  late Future<List<TermsDocument>>? _futureTerms;
   final DepositDraftService _draftService = DepositDraftService();
   bool _canResume = false;
 
@@ -46,15 +46,36 @@ class _DepositViewScreenState extends State<DepositViewScreen> {
   void initState() {
     super.initState();
     _futureProduct = _service.fetchProductDetail(widget.dpstId);
-    _futureTerms = _termsService.fetchTerms(status: 4);
+    _futureTerms =  Future.value(<TermsDocument>[]);
     _checkDraftAvailability();
   }
+
+  void _setTab(int idx) {
+  setState(() {
+    _currentTab = idx;
+
+    // 🔥 약관 탭(2번)에 처음 진입할 때만 로딩
+    if (idx == 2 && _futureTerms == null) {
+      _futureTerms = _termsService
+          .fetchTerms(status: 4)
+          .catchError((_) => <TermsDocument>[]);
+    }
+  });
+}
+
+
 
 
   void _reload() {
     setState(() {
       _futureProduct = _service.fetchProductDetail(widget.dpstId);
-      _futureTerms = _termsService.fetchTerms(status: 4);
+
+      // 🔥 약관 탭을 이미 로딩한 적이 있을 때만 재요청
+      if (_futureTerms != null) {
+        _futureTerms = _termsService
+            .fetchTerms(status: 4)
+            .catchError((_) => <TermsDocument>[]);
+      }
     });
 
     _checkDraftAvailability();
@@ -63,11 +84,18 @@ class _DepositViewScreenState extends State<DepositViewScreen> {
 
   Future<void> _refreshProduct() async {
     _reload();
-    await Future.wait([
+
+    final futures = <Future>[
       _futureProduct,
-      _futureTerms,
-    ]);
+    ];
+
+    if (_futureTerms != null) {
+      futures.add(_futureTerms!);
+    }
+
+    await Future.wait(futures);
   }
+
 
   Future<void> _checkDraftAvailability() async {
     final draft = await _draftService.loadDraft(widget.dpstId);
@@ -414,7 +442,7 @@ class _DepositViewScreenState extends State<DepositViewScreen> {
           return Expanded(
             child: GestureDetector(
               onTap: () {
-                setState(() => _currentTab = idx);
+                _setTab(idx);
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 160),
@@ -1517,7 +1545,9 @@ class _DepositViewScreenState extends State<DepositViewScreen> {
   // ============================================================
   Widget _buildTermsTab(model.DepositProduct product) {
 
-
+    if (_futureTerms == null) {
+      return const Center(child: Text('약관을 불러오는 중입니다.'));
+    }
 
     final String delibNo =
     product.deliberationNumber.isNotEmpty
