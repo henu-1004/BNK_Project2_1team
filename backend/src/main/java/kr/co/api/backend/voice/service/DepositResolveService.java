@@ -30,7 +30,12 @@ public class DepositResolveService {
 
     private String normalize(String text) {
         return text
-                .replaceAll("(가입(하고 싶어|할래|하고싶어)|알려줘|말해줘)", "")
+                .replaceAll(
+                        "(가입(하고\\s*싶어|할래|하고싶어)|" +
+                                "알려\\s*줘|말해\\s*줘|" +
+                                "설명(해|좀\\s*해|해\\s*줘|해줘|해\\s*줄래|해줄래)[요!]*)",
+                        ""
+                )
                 .replaceAll("(전기)", "정기")
                 .trim();
     }

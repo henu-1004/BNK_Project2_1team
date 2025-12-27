@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:test_main/screens/deposit/list.dart';
 import 'package:test_main/screens/deposit/view.dart';
+import 'package:test_main/voice/overlay/voice_overlay_manager.dart';
 import 'package:test_main/voice/ui/voice_nav_command.dart';
 import 'package:test_main/voice/ui/voice_ui_state.dart';
 import 'package:test_main/voice/ui/voice_waveform.dart';
@@ -25,9 +26,12 @@ class VoiceAssistantOverlay extends StatefulWidget {
 
 class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay> {
 
+  void _closeOverlay() {
+    VoiceOverlayManager.hide();
+  }
 
   void _openDepositView(String dpstId) {
-    Navigator.of(context).pop(); // overlay 닫기
+    
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final nav = Navigator.of(context, rootNavigator: true);
@@ -87,7 +91,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay> {
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 15),
 
                 // ⬇️ 나머지는 중앙으로
                 Expanded(
@@ -106,7 +110,7 @@ class _VoiceAssistantOverlayState extends State<VoiceAssistantOverlay> {
                                     state: state,
                                     volume: volume,
                                   ),
-                                  const SizedBox(height: 8),
+                                  const SizedBox(height: 7),
                                   Text(
                                     _stateText(state),
                                     style: const TextStyle(

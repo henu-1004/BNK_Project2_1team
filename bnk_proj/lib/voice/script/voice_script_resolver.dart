@@ -25,17 +25,7 @@ class VoiceScriptResolver {
       }
     }
 
-    // 2️⃣ intent + state 조합
-    if (intent != null) {
-      switch (intent) {
-        case Intent.reqExplain:
-          return "추가로 설명드릴게요.";
-        case Intent.reqJoin:
-          return "이 상품에 가입을 진행할까요?";
-        default:
-          break;
-      }
-    }
+    
 
     // 3️⃣ 기본 state 스크립트 (지금 코드 거의 그대로)
     switch (state) {
@@ -51,7 +41,7 @@ class VoiceScriptResolver {
             : "선택하신 상품을 설명해 드릴게요.";
 
       case VoiceState.s3JoinConfirm:
-        return "이 상품에 가입하시겠어요?";
+        return "이 상품에 정말로 가입하시겠어요?";
 
       case VoiceState.s4Terms:
         return "가입을 위해 약관 동의가 필요해요.";

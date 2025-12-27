@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 import 'package:test_main/screens/deposit/list.dart';
 import 'package:test_main/screens/main/search.dart';
 import 'package:test_main/voice/controller/voice_session_controller.dart';
+import 'package:test_main/voice/overlay/voice_overlay_manager.dart';
+import 'package:test_main/voice/scope/voice_session_scope.dart';
 import '../../services/api_service.dart';
 import '../../voice/service/voice_stt_service.dart';
 import '../../voice/service/voice_tts_service.dart';
@@ -105,59 +107,68 @@ class BankHomePage extends StatefulWidget {
 
 class _BankHomePageState extends State<BankHomePage> {
   // int _currentIndex = 0;
-  VoiceSessionController? _voiceController;
+  late VoiceSessionController _voiceController;
+  bool _listenerAttached = false;
+  
   @override
   void initState() {
     super.initState();
-    _voiceController = VoiceSessionController(
-      stt: VoiceSttService(),
-      tts: VoiceTtsService(),
-    );
+  
+  }
 
-    _voiceController!.navCommand.addListener(_handleVoiceNav);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _voiceController = VoiceSessionScope.of(context);
+
+    if (!_listenerAttached) {
+      _voiceController.navCommand.addListener(_handleVoiceNav);
+      _listenerAttached = true;
+    }
   }
 
   @override
   void dispose() {
-    _voiceController?.navCommand.removeListener(_handleVoiceNav);
+    debugPrint("### BankHomePage dispose ${hashCode}");
+    _voiceController.navCommand.removeListener(_handleVoiceNav);
     super.dispose();
   }
 
   void _openVoiceOverlay() {
-    final controller = _voiceController;
-    if (controller == null) return;
+    _voiceController.attachOverlay(); // 최초 1회만 START
 
-    controller.attachOverlay();
-
-    _openVoiceAssistantOverlay(context, controller);
+    VoiceOverlayManager.show(
+      context,
+      _voiceController,
+    );
   }
 
+
   void _handleVoiceNav() {
-    final cmd = _voiceController!.navCommand.value;
+    debugPrint("### handleVoiceNav cmd=${_voiceController.navCommand.value}");
+    final cmd = _voiceController.navCommand.value;
     if (cmd == null) return;
 
-    _voiceController!.navCommand.value = null;
+    _voiceController.navCommand.value = null;
 
     if (cmd.type == VoiceNavType.openDepositView) {
       _openDepositFlow(cmd.productCode!);
     }
   }
+
   void _openDepositFlow(String productCode) {
-    Navigator.of(context).pop(); // overlay 닫기
+    // 🔹 overlay는 건드리지 않는다
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const DepositListPage()),
+      Navigator.of(context, rootNavigator: true).pushNamed(
+        DepositViewScreen.routeName,
+        arguments: DepositViewArgs(dpstId: productCode),
       );
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pushNamed(
-          DepositViewScreen.routeName,
-          arguments: DepositViewArgs(dpstId: productCode),
-        );
-      });
     });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -969,17 +980,7 @@ Future<bool> _ensureVoiceTermsAgreed(BuildContext context) async {
   return result == true;
 }
 
-void _openVoiceAssistantOverlay(BuildContext context, VoiceSessionController controller) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: Colors.transparent,
-    builder: (_) {
-      return VoiceAssistantOverlay(controller: controller,);
-    },
-  );
-}
+
 
 
 
