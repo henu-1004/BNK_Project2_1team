@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:local_auth/local_auth.dart'; // 생체인증 패키지
+import 'package:test_main/screens/auth/pin_login_screen.dart'; // 핀 화면 import
+import 'package:test_main/screens/auth/pin_setup_screen.dart'; // 핀 설정 화면 import
+import '../../services/exchange_service.dart'; // 환전 서비스
+import '../../services/api_service.dart'; // API 서비스 (PIN 여부 확인용)
 import 'forex_insight.dart';
-import 'package:intl/intl.dart';
+import 'package:local_auth/local_auth.dart';
 
 class ExchangeSellPage extends StatefulWidget {
   final CurrencyRate rate;
@@ -16,6 +22,8 @@ class ExchangeSellPage extends StatefulWidget {
 
 class _ExchangeSellPageState extends State<ExchangeSellPage> {
   String usdAmount = "1";
+
+  final LocalAuthentication auth = LocalAuthentication();
 
   void _onKeyTap(String value) {
     setState(() {
@@ -48,6 +56,115 @@ class _ExchangeSellPageState extends State<ExchangeSellPage> {
         usdAmount += value;
       }
     });
+  }
+
+  // [추가] 통합 인증 및 환전 실행 로직
+  Future<void> _handleAuthAndSell() async {
+    // 0. 금액 검증
+    if (usdAmount.isEmpty || double.parse(usdAmount) <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("판매할 금액을 입력해주세요.")),
+      );
+      return;
+    }
+
+    // 1. PIN 등록 여부 확인 (API 필요)
+    // (여기서는 예시로 ApiService에 checkHasPin 함수가 있다고 가정하거나,
+    // 현재는 무조건 있다고 가정하고 진행할 수도 있습니다. 없을 경우를 대비한 로직입니다.)
+    bool hasPin = true;
+    // bool hasPin = await ApiService.checkHasPin(); // 실제 구현 시 주석 해제
+
+    if (!hasPin) {
+      // PIN이 없으면 생성 화면으로 이동
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("보안을 위해 간편비밀번호 설정이 필요합니다.")),
+      );
+
+      // PinSetupScreen으로 이동 (구현되어 있다고 가정)
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => PinSetupScreen(userId: "user123")), // 실제 ID 넣기
+      );
+      return;
+    }
+
+    // 2. 생체 인증 시도
+    bool authenticated = false;
+    try {
+      bool canCheckBiometrics = await auth.canCheckBiometrics;
+      if (canCheckBiometrics) {
+        authenticated = await auth.authenticate(
+          localizedReason: '환전을 진행하려면 인증해주세요.',
+          options: const AuthenticationOptions(
+            biometricOnly: true,
+            stickyAuth: true,
+          ),
+        );
+      }
+    } catch (e) {
+      print("생체 인증 실패 또는 미지원: $e");
+      // 생체 인증 오류 시 무시하고 PIN으로 넘어감
+    }
+
+    // 3. 생체 인증 실패 시 -> PIN 인증 화면으로 이동
+    if (!authenticated) {
+      if (!mounted) return;
+      // isAuthMode: true로 설정하여 결과를 받아옴
+      final bool? pinResult = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const PinLoginScreen(
+            userId: "user123", // 실제 사용자 ID (Provider나 Storage에서 가져오기)
+            isAuthMode: true,  // ★ 인증 모드 활성화
+          ),
+        ),
+      );
+
+      if (pinResult != true) {
+        // PIN 인증 취소 또는 실패
+        return;
+      }
+    }
+
+    // 4. 인증 성공 (생체 or PIN) -> 환전 실행
+    _executeSell();
+  }
+
+  // 실제 환전 API 호출 함수
+  Future<void> _executeSell() async {
+    try {
+      int sellAmount = double.parse(usdAmount).toInt();
+
+      await ExchangeService.sellForeignCurrency(
+        fromCurrency: widget.rate.code,
+        frgnAmount: sellAmount,
+      );
+
+      if (!mounted) return;
+      // 성공 알림
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("환전 성공"),
+          content: Text("$sellAmount ${widget.rate.code}를 원화로 환전했습니다."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // 다이얼로그 닫기
+                Navigator.pop(context); // 화면 닫기
+              },
+              child: const Text("확인"),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("환전 실패: $e")),
+      );
+    }
   }
 
   @override
@@ -195,9 +312,7 @@ class _ExchangeSellPageState extends State<ExchangeSellPage> {
         width: double.infinity,
         height: 52,
         child: ElevatedButton(
-          onPressed: () {
-            // TODO: 팔기 로직
-          },
+          onPressed: _handleAuthAndSell,
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF3F5073),
             shape: RoundedRectangleBorder(

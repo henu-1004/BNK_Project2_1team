@@ -26,7 +26,8 @@
             FROM TB_EXCH_RATE_HIST
             WHERE rhist_currency = #{currency}
         )
-    </select>
+        AND ROWNUM = 1
+      </select>
 
 
     <!-- =========================
@@ -132,7 +133,7 @@
                      #{custName},
                      '001',
                      #{memo},
-                     TO_CHAR(SYSDATE,'YYYYMMDD') || LPAD(SEQ_CUST_TRAN_NO.CURRVAL,4,'0')
+                     TO_CHAR(SYSDATE,'YYYYMMDD') || LPAD(SEQ_CUST_TRAN_NO.NEXTVAL,4,'0')
                  )
     </insert>
 

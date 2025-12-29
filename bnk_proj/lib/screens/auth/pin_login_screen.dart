@@ -11,10 +11,13 @@ import 'package:local_auth_android/local_auth_android.dart';
 class PinLoginScreen extends StatefulWidget {
   final String userId;
   final bool autoBioAuth;
+  final bool isAuthMode; // [추가] true면 거래 인증용, false면 로그인용
+
   const PinLoginScreen({
     super.key,
     required this.userId,
-    this.autoBioAuth = false // 기본값 false
+    this.autoBioAuth = false, // 기본값 false
+    this.isAuthMode = false, // 기본값은 로그인 모드
   });
 
   @override
@@ -102,25 +105,32 @@ class _PinLoginScreenState extends State<PinLoginScreen> {
   void _verifyPin() async {
     setState(() => _isLoading = true);
 
-    // ★ 백엔드 API 호출: PIN 전용 로그인
+    // ★ PIN 검증 API 호출
+    // (참고: 실제로는 loginWithPin 대신 verifyPin 같은 전용 API가 더 적합할 수 있음)
     Map<String, dynamic> result = await ApiService.loginWithPin(widget.userId, _pin);
 
     if (!mounted) return;
     setState(() => _isLoading = false);
 
     if (result['status'] == 'SUCCESS') {
-      // 로그인 성공 시 메인으로 이동 (이전 기록 삭제)
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const BankHomePage()), // LoginPage로 직접 이동
-            (route) => false,
-      );
+      // 분기 처리
+      if (widget.isAuthMode) {
+        // 인증 모드라면: 성공 결과를 가지고 화면 닫기 (이전 화면으로 돌아감)
+        Navigator.pop(context, true);
+      } else {
+        // 로그인 모드라면: 메인 화면으로 이동
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const BankHomePage()),
+              (route) => false,
+        );
+      }
     } else {
-      // 실패 시 알림 및 초기화
+      // 실패 처리 (기존 동일)
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result['message'] ?? '인증번호가 일치하지 않습니다.'))
       );
-      setState(() => _pin = ""); // 입력창 초기화
+      setState(() => _pin = "");
     }
   }
 

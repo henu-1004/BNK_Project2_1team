@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'forex_insight.dart';
 import '../../services/exchange_service.dart';
 import 'exchange_complete_page.dart';
+import 'package:flutter/services.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:test_main/screens/auth/pin_login_screen.dart';
+import 'package:test_main/screens/auth/pin_setup_screen.dart';
 
 
 class ExchangeBuyPage extends StatefulWidget {
@@ -20,6 +24,8 @@ class ExchangeBuyPage extends StatefulWidget {
 class _ExchangeBuyPageState extends State<ExchangeBuyPage> {
   String foreignAmount = "1";
 
+  final LocalAuthentication auth = LocalAuthentication();
+
   int krwBalance = 0;
   bool isLoading = true;
   int foreignBalance = 0;
@@ -28,6 +34,104 @@ class _ExchangeBuyPageState extends State<ExchangeBuyPage> {
   void initState() {
     super.initState();
     _loadMyAccounts();
+  }
+
+  // [추가] 통합 인증 및 환전 실행 로직 (사기)
+  Future<void> _handleAuthAndBuy() async {
+    // 0. 금액 검증
+    if (foreignAmount.isEmpty || double.parse(foreignAmount) <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("구매할 금액을 입력해주세요.")),
+      );
+      return;
+    }
+
+    // 1. PIN 등록 여부 확인 (예시 로직)
+    bool hasPin = true;
+    // bool hasPin = await ApiService.checkHasPin();
+
+    if (!hasPin) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("보안을 위해 간편비밀번호 설정이 필요합니다.")),
+      );
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => PinSetupScreen(userId: "user123")),
+      );
+      return;
+    }
+
+    // 2. 생체 인증 시도
+    bool authenticated = false;
+    try {
+      bool canCheckBiometrics = await auth.canCheckBiometrics;
+      if (canCheckBiometrics) {
+        authenticated = await auth.authenticate(
+          localizedReason: '환전을 진행하려면 인증해주세요.',
+          options: const AuthenticationOptions(
+            biometricOnly: true,
+            stickyAuth: true,
+          ),
+        );
+      }
+    } catch (e) {
+      print("생체 인증 실패 또는 미지원: $e");
+    }
+
+    // 3. 생체 인증 실패 시 -> PIN 인증 화면으로 이동
+    if (!authenticated) {
+      if (!mounted) return;
+      final bool? pinResult = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const PinLoginScreen(
+            userId: "user123",
+            isAuthMode: true,  // 인증 모드
+          ),
+        ),
+      );
+
+      if (pinResult != true) return; // 취소/실패 시 중단
+    }
+
+    // 4. 인증 성공 -> 환전 실행
+    _executeBuy();
+  }
+
+  // [추가] 실제 환전 API 호출 함수
+  Future<void> _executeBuy() async {
+    try {
+      final double foreign = double.tryParse(foreignAmount) ?? 0;
+      final int krwAmount = (foreign * widget.rate.rate).round();
+
+      // 1️⃣ 서버 환전 요청
+      await ExchangeService.buyForeignCurrency(
+        toCurrency: widget.rate.code,
+        krwAmount: krwAmount,
+      );
+
+      if (!mounted) return;
+
+      // 2️⃣ 환전 완료 화면으로 이동
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ExchangeCompletePage(
+            currency: widget.rate.code,
+            foreignAmount: foreign,
+            krwAmount: krwAmount,
+            appliedRate: widget.rate.rate,
+          ),
+        ),
+      );
+
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("환전 실패: $e")),
+      );
+    }
   }
 
   Future<void> _loadMyAccounts() async {
@@ -177,36 +281,8 @@ class _ExchangeBuyPageState extends State<ExchangeBuyPage> {
               width: double.infinity,
               height: 52,
               child: ElevatedButton(
-                onPressed: () async {
-                  try {
-                    final double foreign = double.tryParse(foreignAmount) ?? 0;
-                    final int krwAmount = (foreign * widget.rate.rate).round();
-
-                    // 1️⃣ 서버 환전 요청
-                    await ExchangeService.buyForeignCurrency(
-                      toCurrency: widget.rate.code,
-                      krwAmount: krwAmount,
-                    );
-
-                    // 2️⃣ 환전 완료 화면으로 이동
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ExchangeCompletePage(
-                          currency: widget.rate.code,
-                          foreignAmount: foreign,
-                          krwAmount: krwAmount,
-                          appliedRate: widget.rate.rate,
-                        ),
-                      ),
-                    );
-
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("환전 실패: $e")),
-                    );
-                  }
-                },
+                onPressed: _handleAuthAndBuy,
+                
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3F5073),
                   shape: RoundedRectangleBorder(
