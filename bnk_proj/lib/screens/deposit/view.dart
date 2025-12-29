@@ -397,13 +397,7 @@ class _DepositViewScreenState extends State<DepositViewScreen> {
       );
     }
 
-    return Image.asset(
-      "images/deposit.png",
-      width: 90,
-      height: 90,
-      fit: BoxFit.contain,
-      errorBuilder: (_, __, ___) => _fallbackDepositIcon(),
-    );
+    return _fallbackDepositIcon();
   }
 
   Widget _fallbackDepositIcon() {

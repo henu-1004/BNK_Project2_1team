@@ -418,11 +418,7 @@ class _DepositListPageState extends State<DepositListPage> {
       );
     }
 
-    return Image.asset(
-      "images/deposit.png",
-      fit: BoxFit.contain,
-      errorBuilder: (_, __, ___) => _fallbackDepositIcon(),
-    );
+    return _fallbackDepositIcon();
   }
 
   Widget _fallbackDepositIcon() {
