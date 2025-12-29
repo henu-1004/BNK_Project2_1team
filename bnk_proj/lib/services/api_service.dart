@@ -26,6 +26,39 @@ class ApiService {
     };
   }
 
+  /// PIN 등록 여부 확인
+  static Future<bool> checkHasPin() async {
+    try {
+      // 1. 저장된 사용자 ID 가져오기 (로그인 시 저장했다고 가정)
+      String? userid = await _storage.read(key: 'saved_userid');
+
+      // 사용자 ID가 없으면 false (재로그인 필요)
+      if (userid == null) {
+        print("🚩 [checkHasPin] 저장된 ID가 없습니다.");
+        return false;
+      }
+
+      // 2. 기기 ID 가져오기
+      String deviceId = await DeviceManager.getDeviceId();
+
+      // 3. 서버에 상태 조회 요청 (기존 API 재활용)
+      // 이 API는 { "status": "...", "hasPin": true/false, ... } 를 반환합니다.
+      final result = await checkDeviceStatus(userid, deviceId);
+
+      // 4. hasPin 값 반환
+      return result['hasPin'] == true;
+
+    } catch (e) {
+      print("🚩 [checkHasPin] 오류 발생: $e");
+      return false;
+    }
+  }
+
+  // 저장된 로그인 아이디 가져오기
+  static Future<String?> getSavedUserId() async {
+    return await _storage.read(key: 'saved_userid');
+  }
+
   /// [STEP 0] 기기 상태 및 일치 여부 확인 (스플래시 화면용)
   /// 반환값: { "status": "MATCH", "hasPin": true, "useBio": false } 형태의 Map
   static Future<Map<String, dynamic>> checkDeviceStatus(String userid, String deviceId) async {
@@ -86,6 +119,10 @@ class ApiService {
         // Case 2: 로그인 성공
         if (responseBody['token'] != null) {
           await _storage.write(key: 'auth_token', value: responseBody['token']);
+
+          // 나중에 checkHasPin에서 쓰기 위해 아이디 저장
+          await _storage.write(key: 'saved_userid', value: userid);
+
           return {
             'status': 'SUCCESS',
             'token': responseBody['token'],

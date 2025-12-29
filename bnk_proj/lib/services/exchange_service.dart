@@ -12,6 +12,9 @@ class ExchangeService {
     final headers = await ApiService.getAuthHeaders();
 
     final response = await http.get(url, headers: headers);
+    print('ssssssssssssssssssssssssssss');
+    print(url);
+    print(headers);
 
     if (response.statusCode != 200) {
       throw Exception("계좌 조회 실패: ${response.statusCode} ${response.body}");

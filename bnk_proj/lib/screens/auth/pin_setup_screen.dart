@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:test_main/screens/auth/pin_login_screen.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../services/api_service.dart';
 import '../app_colors.dart';
 
@@ -12,6 +13,9 @@ class PinSetupScreen extends StatefulWidget {
 }
 
 class _PinSetupScreenState extends State<PinSetupScreen> {
+  // ★ 2. 보안 저장소 인스턴스 생성
+  final _storage = const FlutterSecureStorage();
+
   String _firstPin = "";  // 첫 번째 입력한 비번
   String _secondPin = ""; // 확인용 입력 비번
   bool _isConfirmStage = false; // 확인 단계 여부
@@ -50,8 +54,16 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
       final result = await ApiService.registerPin(widget.userId, _firstPin);
       if (!mounted) return;
 
-      if (result['status'] == 'SUCCESS') {
+      if (result != null && result['status'] == 'SUCCESS') {
+        // ★ 3. 등록 성공 시, 내부 저장소에 PIN과 ID 저장 (생체인증용)
+        await _storage.write(key: 'user_pin', value: _firstPin);
+        await _storage.write(key: 'user_id', value: widget.userId);
+
+        // 처음 등록했으니 생체인증도 켜진 상태로 간주하려면 아래 코드 추가
+        await _storage.write(key: 'use_bio', value: 'true');
+
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('간편비밀번호 등록 완료!')));
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -63,7 +75,9 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
         );
       } else {
         _reset();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message'])));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(result['message'] ?? "등록 실패"))
+        );
       }
     } else {
       // 불일치 시 리셋

@@ -236,6 +236,7 @@ public class OnlineExchangeService {
                 : 0L;
 
         long frgnBalanceAmount = 0L;
+        log.info("@@@@@@@@@@@@@@@@{}",frgnAcct.getFrgnAcctNo());
 
         if (frgnAcct != null && frgnAcct.getFrgnAcctNo() != null) {
             FrgnAcctBalanceDTO frgnBalance = onlineExchangeMapper.selectMyFrgnBalance(

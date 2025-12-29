@@ -71,14 +71,54 @@ class _PinLoginScreenState extends State<PinLoginScreen> {
 
     // 3. 인증 성공 시 메인 화면으로 이동
     if (authenticated) {
-      print("✅ 생체 인증 성공! 메인으로 이동합니다.");
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const BankHomePage()),
-            (route) => false,
-      );
+      print("✅ 생체 인증 성공!");
+
+      // [핵심 수정] 인증 성공 시 -> 서버에 로그인 요청을 보내 '새 토큰'을 받아옵니다.
+      await _loginWithStoredPin();
     } else {
       print("❌ 생체 인증 실패 또는 취소됨 (PIN 입력 대기)");
+    }
+  }
+
+  // 저장된 PIN으로 서버 로그인 (토큰 갱신용)
+  Future<void> _loginWithStoredPin() async {
+    setState(() => _isLoading = true);
+
+    // 1. 저장소에서 저장해둔 PIN과 아이디 꺼내기
+    const storage = FlutterSecureStorage();
+    String? storedPin = await storage.read(key: 'user_pin');
+    String? userId = widget.userId;
+
+    if (storedPin == null) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("최초 1회는 간편비밀번호 입력이 필요합니다.")),
+      );
+      // 여기서 함수 종료 -> 사용자는 자연스럽게 키패드로 PIN을 입력하게 됨
+      return;
+    }
+
+    // 2. 서버에 로그인 요청 (이 함수 안에서 토큰 저장(write)까지 수행됨)
+    Map<String, dynamic> result = await ApiService.loginWithPin(userId, storedPin);
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    if (result['status'] == 'SUCCESS') {
+      // 3. 토큰 갱신 성공 -> 이제 진짜 메인으로 이동
+      if (widget.isAuthMode) {
+        Navigator.pop(context, true); // 인증 모드면 true 반환
+      } else {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const BankHomePage()),
+              (route) => false,
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'] ?? '생체 로그인 실패 (서버 오류)')),
+      );
     }
   }
 
@@ -113,6 +153,10 @@ class _PinLoginScreenState extends State<PinLoginScreen> {
     setState(() => _isLoading = false);
 
     if (result['status'] == 'SUCCESS') {
+      const storage = FlutterSecureStorage();
+      await storage.write(key: 'user_pin', value: _pin);
+      await storage.write(key: 'user_id', value: widget.userId); // 아이디도 같이 저장
+
       // 분기 처리
       if (widget.isAuthMode) {
         // 인증 모드라면: 성공 결과를 가지고 화면 닫기 (이전 화면으로 돌아감)
