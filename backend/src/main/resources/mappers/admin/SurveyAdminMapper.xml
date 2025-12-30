@@ -45,10 +45,7 @@
     </select>
 
     <insert id="insertSurvey"
-            parameterType="kr.co.api.backend.dto.admin.survey.SurveySaveDTO"
-            useGeneratedKeys="true"
-            keyProperty="surveyId"
-            keyColumn="survey_id">
+            parameterType="kr.co.api.backend.dto.admin.survey.SurveySaveDTO">
         INSERT INTO TB_SURVEY (
             title,
             description,
@@ -62,6 +59,17 @@
             #{createdBy},
             #{updatedBy}
         )
+        <selectKey keyProperty="surveyId" resultType="long" order="AFTER">
+            SELECT survey_id
+            FROM (
+                SELECT survey_id
+                FROM TB_SURVEY
+                WHERE title = #{title}
+                  AND created_by = #{createdBy}
+                ORDER BY survey_id DESC
+            )
+            WHERE ROWNUM = 1
+        </selectKey>
     </insert>
 
     <update id="updateSurvey"
@@ -108,10 +116,7 @@
     </select>
 
     <insert id="insertSurveyQuestion"
-            parameterType="kr.co.api.backend.dto.admin.survey.SurveyQuestionDTO"
-            useGeneratedKeys="true"
-            keyProperty="qId"
-            keyColumn="q_id">
+            parameterType="kr.co.api.backend.dto.admin.survey.SurveyQuestionDTO">
         INSERT INTO TB_SURVEY_Q (
             survey_id,
             q_no,
@@ -135,6 +140,12 @@
                      #{createdBy,  jdbcType=VARCHAR},
                      #{updatedBy,  jdbcType=VARCHAR}
                  )
+        <selectKey keyProperty="qId" resultType="long" order="AFTER">
+            SELECT q_id
+            FROM TB_SURVEY_Q
+            WHERE survey_id = #{surveyId}
+              AND q_no = #{qNo}
+        </selectKey>
     </insert>
 
 
