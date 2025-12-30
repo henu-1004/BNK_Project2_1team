@@ -10,6 +10,7 @@ import '../../voice/controller/voice_session_controller.dart';
 import 'package:test_main/voice/core/voice_intent.dart';
 
 import '../../voice/scope/voice_session_scope.dart';
+import '../../voice/ui/voice_nav_command.dart';
 
 
 class DepositStep3Screen extends StatefulWidget {
@@ -32,14 +33,97 @@ class _DepositStep3ScreenState extends State<DepositStep3Screen> {
   bool _voiceAttached = false;
   final DepositDraftService _draftService = DepositDraftService();
 
+  bool _summarySpoken = false;
+  bool _navAttached = false;
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    if (_voiceAttached) return;
     _voiceController = VoiceSessionScope.of(context);
-    _voiceAttached = true;
+
+    // 1️⃣ 요약 음성 안내 (한 번만)
+    if (!_voiceAttached) {
+      _voiceAttached = true;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (_summarySpoken) return;
+        _summarySpoken = true;
+
+        if (_voiceController.isSessionActive) {
+          final summary = _buildConfirmSummary(widget.application);
+          await _voiceController.speakClientGuide(summary);
+        }
+      });
+    }
+
+    // 2️⃣ 음성 confirm → 페이지 이동 리스너
+    if (!_navAttached) {
+      _navAttached = true;
+      _voiceController.navCommand.addListener(_onVoiceNav);
+    }
   }
+  void _onVoiceNav() {
+    final cmd = _voiceController.navCommand.value;
+    if (cmd == null) return;
+
+    if (cmd.type == VoiceNavType.openSignature) {
+      _goToSignature(context);
+    }
+
+    _voiceController.navCommand.value = null;
+  }
+
+
+
+  String _buildConfirmSummary(DepositApplication app) {
+    final product = app.product?.name ?? "선택하신 상품";
+    final currency = _currencyLabelKo( app.newCurrency);
+    final amount = app.newAmount;
+    final period = app.newPeriodMonths;
+    final autoRenew =
+    app.autoRenew == "apply" ? "만기 자동연장을 신청하셨습니다." : "만기 자동연장은 신청하지 않으셨습니다.";
+
+    return """
+현재 가입하시는 상품은 $product입니다.
+신규 통화는 $currency,
+가입 금액은 ${amount} ${currency},
+가입 기간은 ${period}개월이며,
+$autoRenew
+이대로 가입을 진행할까요?
+""";
+  }
+
+  String _currencyLabelKo(String code) {
+    switch (code.toUpperCase()) {
+      case 'USD':
+        return '달러화';
+      case 'JPY':
+        return '엔화';
+      case 'EUR':
+        return '유로화';
+      case 'CNH':
+        return '위안화';
+      case 'CNY':
+        return '위안화';
+      case 'GBP':
+        return '파운드화';
+      case 'AUD':
+        return '호주 달러화';
+      case 'KRW':
+        return '원화';
+      default:
+        return code; // fallback
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_navAttached) {
+      _voiceController.navCommand.removeListener(_onVoiceNav);
+    }
+    super.dispose();
+  }
+
 
 
   @override
@@ -306,7 +390,7 @@ class _DepositStep3ScreenState extends State<DepositStep3Screen> {
           ),
           onPressed: () async {
             _voiceController.sendClientIntent(intent: Intent.confirm);
-            _goToSignature(context);
+            // _goToSignature(context);
           },
           child: const Text(
             "가입하기",

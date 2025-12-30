@@ -194,6 +194,11 @@ class VoiceSessionController {
           productCode: res.productCode,
         );
 
+      case VoiceState.s4Signature:
+        return VoiceNavCommand(
+          type: VoiceNavType.openSignature,
+        );
+
       default:
         return null;
     }

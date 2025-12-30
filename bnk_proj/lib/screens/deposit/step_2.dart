@@ -258,6 +258,7 @@ class _DepositStep2ScreenState extends State<DepositStep2Screen> {
   }
 
   void applyVoiceValue(InputField field, String value) {
+    debugPrint('VOICE APPLY $field = $value');
     setState(() {
       switch (field) {
         case InputField.withdrawAccount:
