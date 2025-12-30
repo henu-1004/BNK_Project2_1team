@@ -14,6 +14,11 @@ import '../ui/voice_ui_state.dart';
 
 class VoiceSessionController {
   VoiceState _state = VoiceState.s0Idle;
+  final VoidCallback? onSessionEnded;
+  Future<void> endSession() async {
+    _cleanup();
+    onSessionEnded?.call();
+  }
 
   // 🔹 UI 상태
   final ValueNotifier<VoiceUiState> uiState =
@@ -55,8 +60,9 @@ class VoiceSessionController {
   VoiceSessionController({
     required VoiceSttService stt,
     required VoiceTtsService tts,
+    this.onSessionEnded
   })  : _stt = stt,
-        _tts = tts ;
+        _tts = tts;
 
 
   Future<void> _startInternal() async {
@@ -139,10 +145,6 @@ class VoiceSessionController {
     if (nav != null) {
       navCommand.value = nav;
     }
-
-
-
-
     if (res.endReason != null) {
       uiState.value = VoiceUiState.speaking;
       await _playEnd(res);
@@ -192,6 +194,11 @@ class VoiceSessionController {
           productCode: res.productCode,
         );
 
+      case VoiceState.s4Signature:
+        return VoiceNavCommand(
+          type: VoiceNavType.openSignature,
+        );
+
       default:
         return null;
     }
@@ -237,10 +244,6 @@ class VoiceSessionController {
     if (script != null) {
       await _tts.speak(script);
     }
-  }
-
-  Future<void> endSession() async {
-    _cleanup();
   }
 
 

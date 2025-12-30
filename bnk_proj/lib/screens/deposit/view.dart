@@ -9,6 +9,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:test_main/screens/deposit/step_3.dart';
 import 'package:test_main/services/deposit_draft_service.dart';
 
+import '../../voice/controller/voice_session_controller.dart';
+import '../../voice/scope/voice_session_scope.dart';
+
 class DepositViewArgs {
   final String dpstId;
 
@@ -56,6 +59,66 @@ class _DepositViewScreenState extends State<DepositViewScreen> {
   Future<List<TermsDocument>> _requestTerms() {
     return _termsService.fetchTerms(status: 4).catchError((_) => <TermsDocument>[]);
   }
+
+  late VoiceSessionController _voiceController;
+
+  bool _voiceAttached = false;
+  bool _summarySpoken = false;
+
+  model.DepositProduct? _loadedProduct;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (_voiceAttached) return;
+    _voiceAttached = true;
+
+    _voiceController = VoiceSessionScope.of(context);
+  }
+
+  String _buildProductViewVoice(model.DepositProduct product) {
+    final rawInfo = product.description.isNotEmpty
+        ? product.description
+        : product.info;
+    final info = rawInfo.replaceAll('FLOBANK', '플로뱅크');
+
+    final currencies = product.dpstCurrency.isNotEmpty
+        ? product.dpstCurrency
+        .split(',')
+        .map((c) => _currencyLabelKo(c.trim()))
+        .join(', ')
+        : '제한 없음';
+
+    return """
+$info
+가입 가능한 통화는 $currencies 입니다.
+""";
+  }
+
+  String _currencyLabelKo(String code) {
+    switch (code.toUpperCase()) {
+      case 'USD':
+        return '달러화';
+      case 'JPY':
+        return '엔화';
+      case 'EUR':
+        return '유로화';
+      case 'CNY':
+      case 'CNH':
+        return '위안화';
+      case 'GBP':
+        return '파운드화';
+      case 'AUD':
+        return '호주 달러화';
+      default:
+        return code;
+    }
+  }
+
+
+
+
 
 
   void _setTab(int idx) {
@@ -174,6 +237,17 @@ class _DepositViewScreenState extends State<DepositViewScreen> {
         }
 
         final product = snapshot.data!;
+        _loadedProduct ??= product;
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          if (_summarySpoken) return;
+          if (_loadedProduct == null) return;
+          _summarySpoken = true;
+
+          if (_voiceController.isSessionActive) {
+            final script = _buildProductViewVoice(_loadedProduct!);
+            await _voiceController.speakClientGuide(script);
+          }
+        });
 
         return Scaffold(
           backgroundColor: AppColors.backgroundOffWhite,
