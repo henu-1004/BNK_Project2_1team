@@ -31,10 +31,6 @@ class DepositStep3Screen extends StatelessWidget {
         ? (application.selectedFxAccount ?? "미입력")
         : (application.selectedKrwAccount ?? "미입력");
 
-    final withdrawCurrencyLabel = application.withdrawType == "fx"
-        ? (application.fxWithdrawCurrency ?? "미입력")
-        : "KRW";
-
     final amountLabel = application.newAmount != null
         ? "${application.newCurrency} ${formatter.format(application.newAmount)}"
         : "미입력";
@@ -70,7 +66,6 @@ class DepositStep3Screen extends StatelessWidget {
                 withdrawAccountLabel,
               ],
 
-              ["출금통화", withdrawCurrencyLabel],
               ["비밀번호 입력 여부", application.withdrawPassword != null
                   ? "입력완료"
                   : "미입력"],
