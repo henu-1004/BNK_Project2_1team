@@ -1,4 +1,5 @@
 package kr.co.api.backend.mapper;
+import kr.co.api.backend.annotation.CoreBanking;
 import kr.co.api.backend.dto.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -45,6 +46,7 @@ public interface OnlineExchangeMapper {
     /* =========================
        4. 원화 계좌 잔액 UPDATE
        ========================= */
+    @CoreBanking
     int updateKrwAcctBalance(
             @Param("acctNo") String acctNo,
             @Param("balance") Long balance
@@ -54,6 +56,7 @@ public interface OnlineExchangeMapper {
     /* =========================
        5. 외화 자식 계좌 잔액 UPDATE
        ========================= */
+    @CoreBanking
     int updateFrgnBalance(
             @Param("balNo") String balNo,
             @Param("balance") Long balance
@@ -77,9 +80,6 @@ public interface OnlineExchangeMapper {
             @Param("frgnAcctNo") String frgnAcctNo,
             @Param("currency") String currency
     );
-
-
-
 
 }
 

@@ -17,10 +17,30 @@ spring:
       max-file-size: 50MB
       max-request-size: 50MB
   datasource:
-    jdbc-url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: oracle.jdbc.OracleDriver
+    # 1. Master DB (기존과 동일)
+    master:
+      jdbc-url: ${DB_URL}
+      username: ${DB_USERNAME}
+      password: ${DB_PASSWORD}
+      driver-class-name: oracle.jdbc.OracleDriver
+      hikari:
+        pool-name: Master-HikariCP
+        maximum-pool-size: 10
+        minimum-idle: 5
+        connection-timeout: 30000
+
+    # 2. Slave DB (환경변수로 변경함)
+    slave:
+      jdbc-url: ${SLAVE_DB_URL}
+      username: ${SLAVE_DB_USERNAME}
+      password: ${SLAVE_DB_PASSWORD}
+      driver-class-name: oracle.jdbc.OracleDriver
+      hikari:
+        pool-name: Slave-HikariCP
+        maximum-pool-size: 10
+        minimum-idle: 5
+        connection-timeout: 30000
+
   #  profiles:
   #    active: dev
   elasticsearch:

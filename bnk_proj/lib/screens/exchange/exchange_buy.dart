@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:test_main/screens/auth/pin_login_screen.dart';
 import 'package:test_main/screens/auth/pin_setup_screen.dart';
+import '../../services/api_service.dart';
 
 
 class ExchangeBuyPage extends StatefulWidget {
@@ -46,9 +47,20 @@ class _ExchangeBuyPageState extends State<ExchangeBuyPage> {
       return;
     }
 
-    // 1. PIN 등록 여부 확인 (예시 로직)
-    bool hasPin = true;
-    // bool hasPin = await ApiService.checkHasPin();
+    // [1] 현재 로그인한 사용자 아이디 가져오기
+    String? currentUserId = await ApiService.getSavedUserId();
+
+    if (currentUserId == null) {
+      // 아이디가 없으면(로그인 풀림 등) 에러 처리 후 종료
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("로그인 정보가 없습니다. 다시 로그인해주세요.")),
+      );
+      return;
+    }
+
+    // 1. PIN 등록 여부 확인
+    bool hasPin = await ApiService.checkHasPin();
 
     if (!hasPin) {
       if (!mounted) return;
@@ -57,7 +69,7 @@ class _ExchangeBuyPageState extends State<ExchangeBuyPage> {
       );
       await Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => PinSetupScreen(userId: "user123")),
+        MaterialPageRoute(builder: (context) => PinSetupScreen(userId: currentUserId)),
       );
       return;
     }
@@ -85,9 +97,9 @@ class _ExchangeBuyPageState extends State<ExchangeBuyPage> {
       final bool? pinResult = await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => const PinLoginScreen(
-            userId: "user123",
-            isAuthMode: true,  // 인증 모드
+          builder: (context) => PinLoginScreen(
+            userId: currentUserId,
+            isAuthMode: true,
           ),
         ),
       );
@@ -282,7 +294,7 @@ class _ExchangeBuyPageState extends State<ExchangeBuyPage> {
               height: 52,
               child: ElevatedButton(
                 onPressed: _handleAuthAndBuy,
-                
+
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3F5073),
                   shape: RoundedRectangleBorder(

@@ -73,6 +73,9 @@ public class OnlineExchangeController {
             @RequestParam String currency,
             Authentication authentication
     ) {
+
+        log.info("가나다라");
+
         // 인증 체크
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));

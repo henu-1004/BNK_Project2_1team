@@ -180,11 +180,12 @@
          ========================= -->
     <select id="selectMyFrgnBalance"
             resultType="kr.co.api.backend.dto.FrgnAcctBalanceDTO">
-        SELECT
-            *
-        FROM TB_FRGN_ACCT_BALANCE
-        WHERE bal_frgn_acct_no = #{frgnAcctNo}
-          AND bal_currency = #{currency}
+            SELECT
+                *
+            FROM TB_FRGN_ACCT_BALANCE
+            WHERE bal_frgn_acct_no = #{frgnAcctNo}
+            AND bal_currency = #{currency}
+            AND ROWNUM = 1
     </select>
 
 

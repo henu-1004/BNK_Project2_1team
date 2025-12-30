@@ -5,15 +5,22 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 @MapperScan(
@@ -22,44 +29,147 @@ import javax.sql.DataSource;
 )
 public class MyBatisConfig {
 
-    //  1. DataSource 생성 (수정된 부분)
-    // spring.datasource 접두어를 사용하여 HikariDataSource 타입으로 확실하게 바인딩합니다.
-    @Bean(name = "dataSource")
-    @Primary
-    @ConfigurationProperties(prefix = "spring.datasource")
-    public DataSource dataSource() {
-        return DataSourceBuilder.create()
-                .type(HikariDataSource.class) //  타입을 명시적으로 지정!
-                .build();
+    @Autowired
+    private DbStatusManager dbStatusManager;
+
+    // 감시자용 성격 급한 DataSource (Timeout 1초)
+    @Bean(name = "masterPingDataSource")
+    public DataSource masterPingDataSource() {
+        HikariDataSource dataSource = new HikariDataSource();
+        dataSource.setJdbcUrl("jdbc:oracle:thin:@34.64.251.211:1521/XEPDB1"); // Master URL
+        dataSource.setUsername("FLOBANK");
+        dataSource.setPassword("1234");
+        dataSource.setDriverClassName("oracle.jdbc.OracleDriver");
+
+        dataSource.setConnectionTimeout(1000); // 1초
+        dataSource.setValidationTimeout(1000);
+        dataSource.setPoolName("Master-Ping-Pool");
+        dataSource.setMaximumPoolSize(1);
+        return dataSource;
     }
 
-    // 2. SqlSessionFactory 생성 (기존과 동일)
+    // [2] Slave 감시용
+    @Bean(name = "slavePingDataSource")
+    public DataSource slavePingDataSource() {
+        HikariDataSource dataSource = new HikariDataSource();
+        dataSource.setJdbcUrl("jdbc:oracle:thin:@34.64.116.127:1521/XE"); // Slave URL 확인!
+        dataSource.setUsername("FLOBANK");
+        dataSource.setPassword("1234");
+        dataSource.setDriverClassName("oracle.jdbc.OracleDriver");
+
+        // ★ 핵심: 1초 안에 연결 안 되면 바로 포기!
+        dataSource.setConnectionTimeout(1000);
+        dataSource.setValidationTimeout(1000);
+        dataSource.setPoolName("Slave-Ping-Pool");
+        dataSource.setMaximumPoolSize(1);
+        return dataSource;
+    }
+
+    // 1. Master DB
+    @Bean(name = "masterDataSource")
+    @ConfigurationProperties(prefix = "spring.datasource.master")
+    public DataSource masterDataSource() {
+        return DataSourceBuilder.create().type(HikariDataSource.class).build();
+    }
+
+    // 2. Slave DB (이름 변경됨: realSlaveDataSource)
+    @Bean(name = "realSlaveDataSource")
+    public DataSource realSlaveDataSource() {
+        HikariDataSource dataSource = new HikariDataSource();
+
+        // ★ [강제 하드코딩]
+        dataSource.setJdbcUrl("jdbc:oracle:thin:@34.64.116.127:1521/XE");
+        dataSource.setUsername("FLOBANK");
+        dataSource.setPassword("1234");
+        dataSource.setDriverClassName("oracle.jdbc.OracleDriver");
+
+        // ★ [이름표] 로그에 이게 떠야 성공입니다.
+        dataSource.setPoolName("Slave-HikariCP");
+
+        dataSource.setMaximumPoolSize(10);
+        dataSource.setMinimumIdle(5);
+        dataSource.setConnectionTimeout(30000);
+
+        System.out.println(">>> [MyBatisConfig] realSlaveDataSource 생성 완료 (IP: 34.64.116.127)");
+        return dataSource;
+    }
+
+    // 3. Routing (Master + Slave)
+    @Bean(name = "routingDataSource")
+    public DataSource routingDataSource(
+            @Qualifier("masterDataSource") DataSource masterDataSource,
+            @Qualifier("realSlaveDataSource") DataSource realSlaveDataSource) { // ★ 여기 중요!
+
+        ReplicationRoutingDataSource routingDataSource = new ReplicationRoutingDataSource(dbStatusManager);
+        Map<Object, Object> dataSourceMap = new HashMap<>();
+        dataSourceMap.put("master", masterDataSource);
+        dataSourceMap.put("slave", realSlaveDataSource);
+        routingDataSource.setTargetDataSources(dataSourceMap);
+        routingDataSource.setDefaultTargetDataSource(masterDataSource);
+        return routingDataSource;
+    }
+
+    // 4. Proxy (Transaction)
+    @Bean(name = "dataSource")
+    @Primary
+    public DataSource dataSource(@Qualifier("routingDataSource") DataSource routingDataSource) {
+        return new LazyConnectionDataSourceProxy(routingDataSource);
+    }
+
+    // 5. Main SqlSessionFactory (라우팅용)
     @Bean(name = "sqlSessionFactory")
     @Primary
     public SqlSessionFactory sqlSessionFactory(@Qualifier("dataSource") DataSource dataSource) throws Exception {
         SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean();
         sessionFactory.setDataSource(dataSource);
-
-        // Mapper XML 위치
-        sessionFactory.setMapperLocations(
-                new PathMatchingResourcePatternResolver().getResources("classpath:mappers/**/*.xml")
-        );
-
-        // DTO 패키지
+        sessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath:mappers/**/*.xml"));
         sessionFactory.setTypeAliasesPackage("kr.co.api.backend.model, kr.co.api.backend.dto.search, kr.co.api.backend.dto");
-
-        // 설정
         org.apache.ibatis.session.Configuration configuration = new org.apache.ibatis.session.Configuration();
         configuration.setMapUnderscoreToCamelCase(true);
         sessionFactory.setConfiguration(configuration);
-
         return sessionFactory.getObject();
     }
 
-    // 3. SqlSessionTemplate 생성 (기존과 동일)
     @Bean(name = "sqlSessionTemplate")
     @Primary
     public SqlSessionTemplate sqlSessionTemplate(@Qualifier("sqlSessionFactory") SqlSessionFactory sqlSessionFactory) {
         return new SqlSessionTemplate(sqlSessionFactory);
+    }
+
+    // =============================================================
+    // ★ [핵심] Slave 전용 직통 라인 (라우팅 안 거침!)
+    // =============================================================
+    @Bean(name = "slaveSqlSessionFactory")
+    public SqlSessionFactory slaveSqlSessionFactory(
+            @Qualifier("realSlaveDataSource") DataSource realSlaveDataSource) throws Exception { // ★ 여기가 틀렸었음!
+
+        SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean();
+        // ★ 라우팅이 아닌 'realSlaveDataSource'를 직접 꽂습니다.
+        sessionFactory.setDataSource(realSlaveDataSource);
+
+        sessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath:mappers/**/*.xml"));
+        sessionFactory.setTypeAliasesPackage("kr.co.api.backend.model, kr.co.api.backend.dto.search, kr.co.api.backend.dto");
+        org.apache.ibatis.session.Configuration configuration = new org.apache.ibatis.session.Configuration();
+        configuration.setMapUnderscoreToCamelCase(true);
+        sessionFactory.setConfiguration(configuration);
+        return sessionFactory.getObject();
+    }
+
+    @Bean(name = "slaveSqlSessionTemplate")
+    public SqlSessionTemplate slaveSqlSessionTemplate(@Qualifier("slaveSqlSessionFactory") SqlSessionFactory slaveSqlSessionFactory) {
+        return new SqlSessionTemplate(slaveSqlSessionFactory);
+    }
+
+    // 6. 트랜잭션 매니저
+    @Bean(name = "transactionManager")
+    @Primary
+    public PlatformTransactionManager transactionManager(@Qualifier("dataSource") DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+    }
+
+    @Bean(name = "slaveTransactionManager")
+    public PlatformTransactionManager slaveTransactionManager(
+            @Qualifier("realSlaveDataSource") DataSource realSlaveDataSource) { // ★ 여기도 중요!
+        return new DataSourceTransactionManager(realSlaveDataSource);
     }
 }
