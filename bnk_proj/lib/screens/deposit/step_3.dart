@@ -140,10 +140,6 @@ $autoRenew
         ? (widget.application.selectedFxAccount ?? "미입력")
         : (widget.application.selectedKrwAccount ?? "미입력");
 
-    final withdrawCurrencyLabel = widget.application.withdrawType == "fx"
-        ? (widget.application.fxWithdrawCurrency ?? "미입력")
-        : "KRW";
-
     final amountLabel = widget.application.newAmount != null
         ? "${widget.application.newCurrency} ${formatter.format(widget.application.newAmount)}"
         : "미입력";
@@ -179,7 +175,6 @@ $autoRenew
                 withdrawAccountLabel,
               ],
 
-              ["출금통화", withdrawCurrencyLabel],
               ["비밀번호 입력 여부", widget.application.withdrawPassword != null
                   ? "입력완료"
                   : "미입력"],
