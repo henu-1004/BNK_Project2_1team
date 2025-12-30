@@ -218,7 +218,13 @@ class _DepositStep2ScreenState extends State<DepositStep2Screen> {
   };
 
   int currentIndex = 0;
-  InputField get currentField => inputFlow[currentIndex];
+  InputField get currentField {
+    if (currentIndex >= inputFlow.length) {
+      return inputFlow.last;
+    }
+    return inputFlow[currentIndex];
+  }
+
 
   bool isFilled(InputField field) {
     return inputConfirmed[field] == true;
@@ -240,8 +246,13 @@ class _DepositStep2ScreenState extends State<DepositStep2Screen> {
         continue;
       }
 
-      // ✅ 질문해야 할 필드
+      //  질문해야 할 필드
       break;
+    }
+
+    //  리스트 초과 방지
+    if (currentIndex >= inputFlow.length) {
+      currentIndex = inputFlow.length - 1;
     }
   }
 
