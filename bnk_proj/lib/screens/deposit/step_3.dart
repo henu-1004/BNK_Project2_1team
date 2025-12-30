@@ -384,8 +384,14 @@ $autoRenew
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
           onPressed: () async {
-            _voiceController.sendClientIntent(intent: Intent.confirm);
-            // _goToSignature(context);
+            if (_voiceController.isSessionActive) {
+              // 1. 음성 세션이 활성화되어 있다면, 의도(Intent)만 전달합니다.
+              // 이후 서버 응답에 따라 _onVoiceNav 리스너가 _goToSignature를 자동으로 호출합니다.
+              _voiceController.sendClientIntent(intent: Intent.confirm);
+            } else {
+              // 2. 음성 세션이 없다면(일반 가입), 즉시 다음 화면으로 이동합니다.
+              _goToSignature(context);
+            }
           },
           child: const Text(
             "가입하기",
