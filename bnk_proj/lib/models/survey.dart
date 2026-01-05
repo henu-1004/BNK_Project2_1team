@@ -8,6 +8,13 @@ int? _toNullableInt(dynamic value) {
   return int.tryParse(value.toString());
 }
 
+dynamic _readKey(Map<String, dynamic> json, String camelKey, String snakeKey) {
+  if (json.containsKey(camelKey)) {
+    return json[camelKey];
+  }
+  return json[snakeKey];
+}
+
 class SurveyOption {
   final int optId;
   final String optCode;
@@ -25,11 +32,11 @@ class SurveyOption {
 
   factory SurveyOption.fromJson(Map<String, dynamic> json) {
     return SurveyOption(
-      optId: _toInt(json['optId']),
-      optCode: json['optCode']?.toString() ?? '',
-      optText: json['optText']?.toString() ?? '',
-      optValue: json['optValue']?.toString(),
-      optOrder: _toInt(json['optOrder']),
+      optId: _toInt(_readKey(json, 'optId', 'opt_id')),
+      optCode: _readKey(json, 'optCode', 'opt_code')?.toString() ?? '',
+      optText: _readKey(json, 'optText', 'opt_text')?.toString() ?? '',
+      optValue: _readKey(json, 'optValue', 'opt_value')?.toString(),
+      optOrder: _toInt(_readKey(json, 'optOrder', 'opt_order')),
     );
   }
 }
@@ -56,15 +63,16 @@ class SurveyQuestion {
   });
 
   factory SurveyQuestion.fromJson(Map<String, dynamic> json) {
-    final rawOptions = (json['options'] as List<dynamic>? ?? []);
+    final rawOptions =
+        (_readKey(json, 'options', 'options') as List<dynamic>? ?? []);
     return SurveyQuestion(
-      qId: _toInt(json['qId']),
-      qNo: _toInt(json['qNo']),
-      qKey: json['qKey']?.toString() ?? '',
-      qText: json['qText']?.toString() ?? '',
-      qType: json['qType']?.toString() ?? '',
-      isRequired: json['isRequired']?.toString() ?? 'N',
-      maxSelect: _toNullableInt(json['maxSelect']),
+      qId: _toInt(_readKey(json, 'qId', 'qid')),
+      qNo: _toInt(_readKey(json, 'qNo', 'qno')),
+      qKey: _readKey(json, 'qKey', 'qkey')?.toString() ?? '',
+      qText: _readKey(json, 'qText', 'qtext')?.toString() ?? '',
+      qType: _readKey(json, 'qType', 'qtype')?.toString() ?? '',
+      isRequired: _readKey(json, 'isRequired', 'is_required')?.toString() ?? 'N',
+      maxSelect: _toNullableInt(_readKey(json, 'maxSelect', 'max_select')),
       options: rawOptions
           .map((e) => SurveyOption.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -86,11 +94,12 @@ class SurveyDetail {
   });
 
   factory SurveyDetail.fromJson(Map<String, dynamic> json) {
-    final rawQuestions = (json['questions'] as List<dynamic>? ?? []);
+    final rawQuestions =
+        (_readKey(json, 'questions', 'questions') as List<dynamic>? ?? []);
     return SurveyDetail(
-      surveyId: _toInt(json['surveyId']),
-      title: json['title']?.toString() ?? '',
-      description: json['description']?.toString(),
+      surveyId: _toInt(_readKey(json, 'surveyId', 'survey_id')),
+      title: _readKey(json, 'title', 'title')?.toString() ?? '',
+      description: _readKey(json, 'description', 'description')?.toString(),
       questions: rawQuestions
           .map((e) => SurveyQuestion.fromJson(e as Map<String, dynamic>))
           .toList(),
