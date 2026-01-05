@@ -6,6 +6,7 @@ import 'package:test_main/services/survey_service.dart';
 
 class DepositSurveyScreen extends StatefulWidget {
   static const routeName = "/deposit-survey";
+  static const int surveyId = 43;
 
   const DepositSurveyScreen({super.key});
 
@@ -14,7 +15,6 @@ class DepositSurveyScreen extends StatefulWidget {
 }
 
 class _DepositSurveyScreenState extends State<DepositSurveyScreen> {
-  static const int surveyId = 43;
   static const int resultQId = 10;
 
   final SurveyService _surveyService = SurveyService();
@@ -28,7 +28,7 @@ class _DepositSurveyScreenState extends State<DepositSurveyScreen> {
   @override
   void initState() {
     super.initState();
-    _surveyFuture = _surveyService.fetchSurveyDetail(surveyId);
+    _surveyFuture = _surveyService.fetchSurveyDetail(DepositSurveyScreen.surveyId);
   }
 
   @override
@@ -412,7 +412,7 @@ class _DepositSurveyScreenState extends State<DepositSurveyScreen> {
       //print('✅ SERVER ECHO = $echoed');
 
       await _surveyService.submitSurveyResponse(
-        surveyId: surveyId,
+        surveyId: DepositSurveyScreen.surveyId,
         custCode: custCode,
         answers: answers,
       );
