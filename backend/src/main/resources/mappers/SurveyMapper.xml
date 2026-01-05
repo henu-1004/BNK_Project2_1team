@@ -140,22 +140,22 @@
     </delete>
 
     <insert id="insertRecommendations">
-        INSERT ALL
-        <foreach collection="recs" item="rec">
-            INTO TB_CUST_RECO_TOP3 (
-            cust_code,
-            survey_id,
-            rank_no,
-            product_id
-            ) VALUES (
+        INSERT INTO TB_CUST_RECO_TOP3 (
+        cust_code,
+        survey_id,
+        rank_no,
+        product_id
+        )
+        <foreach collection="recs" item="rec" separator="UNION ALL">
+            SELECT
             #{rec.custCode, jdbcType=VARCHAR},
             #{rec.surveyId, jdbcType=NUMERIC},
             #{rec.rankNo, jdbcType=NUMERIC},
             #{rec.productId, jdbcType=VARCHAR}
-            )
+            FROM DUAL
         </foreach>
-        SELECT 1 FROM DUAL
     </insert>
+
 
     <select id="selectRecommendations"
             resultType="kr.co.api.backend.dto.survey.SurveyRecommendationDTO">
