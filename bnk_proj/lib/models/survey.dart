@@ -106,3 +106,61 @@ class SurveyDetail {
     );
   }
 }
+
+class SurveyRecommendation {
+  final int rankNo;
+  final String dpstId;
+  final String dpstName;
+  final String dpstInfo;
+  final String dpstCurrency;
+  final String tag;
+
+  const SurveyRecommendation({
+    required this.rankNo,
+    required this.dpstId,
+    required this.dpstName,
+    required this.dpstInfo,
+    required this.dpstCurrency,
+    required this.tag,
+  });
+
+  factory SurveyRecommendation.fromJson(Map<String, dynamic> json) {
+    return SurveyRecommendation(
+      rankNo: _toInt(_readKey(json, 'rankNo', 'rank_no')),
+      dpstId: _readKey(json, 'dpstId', 'dpst_id')?.toString() ?? '',
+      dpstName: _readKey(json, 'dpstName', 'dpst_name')?.toString() ?? '',
+      dpstInfo: _readKey(json, 'dpstInfo', 'dpst_info')?.toString() ?? '',
+      dpstCurrency: _readKey(json, 'dpstCurrency', 'dpst_currency')?.toString() ?? '',
+      tag: _readKey(json, 'tag', 'tag')?.toString() ?? 'AI 추천',
+    );
+  }
+}
+
+class SurveyPrefill {
+  final String? productId;
+  final String? currency;
+  final int? amount;
+  final int? periodMonths;
+  final String? withdrawType;
+  final String? accountPreference;
+
+  const SurveyPrefill({
+    this.productId,
+    this.currency,
+    this.amount,
+    this.periodMonths,
+    this.withdrawType,
+    this.accountPreference,
+  });
+
+  factory SurveyPrefill.fromJson(Map<String, dynamic> json) {
+    return SurveyPrefill(
+      productId: _readKey(json, 'productId', 'product_id')?.toString(),
+      currency: _readKey(json, 'currency', 'currency')?.toString(),
+      amount: _toNullableInt(_readKey(json, 'amount', 'amount')),
+      periodMonths: _toNullableInt(_readKey(json, 'periodMonths', 'period_months')),
+      withdrawType: _readKey(json, 'withdrawType', 'withdraw_type')?.toString(),
+      accountPreference: _readKey(json, 'accountPreference', 'account_preference')?.toString(),
+    );
+  }
+}

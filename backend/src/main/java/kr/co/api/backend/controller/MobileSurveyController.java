@@ -1,7 +1,10 @@
 package kr.co.api.backend.controller;
 
 import kr.co.api.backend.dto.survey.SurveyDetailResponseDTO;
+import kr.co.api.backend.dto.survey.SurveyPrefillResponseDTO;
+import kr.co.api.backend.dto.survey.SurveyRecommendationResponseDTO;
 import kr.co.api.backend.dto.survey.SurveyResponseRequestDTO;
+import kr.co.api.backend.service.SurveyRecommendationService;
 import kr.co.api.backend.service.SurveyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +18,7 @@ import java.util.Map;
 public class MobileSurveyController {
 
     private final SurveyService surveyService;
+    private final SurveyRecommendationService recommendationService;
 
     @GetMapping("/{surveyId}")
     public ResponseEntity<SurveyDetailResponseDTO> getSurvey(@PathVariable Long surveyId) {
@@ -30,6 +34,23 @@ public class MobileSurveyController {
     ) {
         surveyService.submitSurveyResponse(surveyId, request);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{surveyId}/recommendations")
+    public ResponseEntity<SurveyRecommendationResponseDTO> getRecommendations(
+            @PathVariable Long surveyId,
+            @RequestParam String custCode
+    ) {
+        return ResponseEntity.ok(recommendationService.getRecommendations(custCode, surveyId));
+    }
+
+    @GetMapping("/{surveyId}/recommendations/{productId}/prefill")
+    public ResponseEntity<SurveyPrefillResponseDTO> getPrefill(
+            @PathVariable Long surveyId,
+            @PathVariable String productId,
+            @RequestParam String custCode
+    ) {
+        return ResponseEntity.ok(recommendationService.buildPrefill(custCode, surveyId, productId));
     }
 
     @PostMapping("/{surveyId}/responses/_debug")

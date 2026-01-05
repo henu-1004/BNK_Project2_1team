@@ -24,6 +24,50 @@ class SurveyService {
     return SurveyDetail.fromJson(data);
   }
 
+  Future<List<SurveyRecommendation>> fetchRecommendations({
+    required int surveyId,
+    required String custCode,
+  }) async {
+    final uri = Uri.parse('$baseUrl/surveys/$surveyId/recommendations')
+        .replace(queryParameters: {'custCode': custCode});
+
+    final response = await _client.get(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('추천 조회 실패 (${response.statusCode})');
+    }
+
+    final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+    final rawProducts = (data['products'] as List<dynamic>? ?? []);
+    return rawProducts
+        .map((e) => SurveyRecommendation.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<SurveyPrefill> fetchPrefill({
+    required int surveyId,
+    required String custCode,
+    required String productId,
+  }) async {
+    final uri = Uri.parse('$baseUrl/surveys/$surveyId/recommendations/$productId/prefill')
+        .replace(queryParameters: {'custCode': custCode});
+
+    final response = await _client.get(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('추천 프리필 조회 실패 (${response.statusCode})');
+    }
+
+    final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+    return SurveyPrefill.fromJson(data);
+  }
+
   /// ✅ 원래(실제 저장) 엔드포인트로 제출
   Future<void> submitSurveyResponse({
     required int surveyId,

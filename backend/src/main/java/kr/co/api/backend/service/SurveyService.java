@@ -26,6 +26,7 @@ public class SurveyService {
     private static final Long TYPE_EVENT = 42L;
 
     private final SurveyMapper surveyMapper;
+    private final SurveyRecommendationService recommendationService;
 
     public SurveyDetailResponseDTO getSurveyDetail(Long surveyId) {
         SurveyDetailResponseDTO detail = surveyMapper.selectSurveyById(surveyId);
@@ -148,6 +149,8 @@ public class SurveyService {
 
         log.info("[SURVEY] submit done surveyId={}, custCode={}, respId={}, insertedRows={}",
                 surveyId, request.getCustCode(), respId, details.size());
+
+        recommendationService.refreshTop3(request.getCustCode(), surveyId);
     }
 
     private Long deriveTypeOptId(List<SurveyAnswerRequestDTO> answers) {

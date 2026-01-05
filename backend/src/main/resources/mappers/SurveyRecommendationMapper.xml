@@ -1,0 +1,114 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.api.backend.mapper.SurveyRecommendationMapper">
+
+    <select id="selectLatestRespId" resultType="long">
+        SELECT resp_id
+        FROM TB_SURVEY_RESP_HDR
+        WHERE survey_id = #{surveyId}
+          AND cust_code = #{custCode}
+        ORDER BY updated_at DESC, resp_id DESC
+        FETCH FIRST 1 ROWS ONLY
+    </select>
+
+    <select id="selectResponseDetails"
+            resultType="kr.co.api.backend.dto.survey.SurveyResponseDetailDTO">
+        SELECT
+            resp_id AS respId,
+            q_id AS qId,
+            opt_id AS optId,
+            answer_text AS answerText
+        FROM TB_SURVEY_RESP_DTL
+        WHERE resp_id = #{respId}
+    </select>
+
+    <select id="selectRecoCandidates"
+            resultType="kr.co.api.backend.dto.survey.RecoCandidateDTO">
+        SELECT
+            dpst_id AS dpstId,
+            dpst_name AS dpstName,
+            dpst_info AS dpstInfo,
+            dpst_descript AS dpstDescript,
+            dpst_currency AS dpstCurrency,
+            dpst_type AS dpstType,
+            dpst_rate_type AS dpstRateType,
+            dpst_part_wdrw_yn AS dpstPartWdrwYn,
+            dpst_add_pay_yn AS dpstAddPayYn,
+            dpst_auto_renew_yn AS dpstAutoRenewYn,
+            dpst_period_type AS dpstPeriodType
+        FROM TB_DPST_PROD_INFO
+        WHERE dpst_status = 3
+    </select>
+
+    <delete id="deleteRecoTop3">
+        DELETE FROM TB_CUST_RECO_TOP3
+        WHERE cust_code = #{custCode}
+          AND survey_id = #{surveyId}
+    </delete>
+
+    <insert id="insertRecoTop3">
+        INSERT ALL
+        <foreach collection="rows" item="row">
+            INTO TB_CUST_RECO_TOP3 (
+                cust_code,
+                survey_id,
+                rank_no,
+                product_id
+            ) VALUES (
+                #{row.custCode, jdbcType=VARCHAR},
+                #{row.surveyId, jdbcType=NUMERIC},
+                #{row.rankNo, jdbcType=NUMERIC},
+                #{row.productId, jdbcType=VARCHAR}
+            )
+        </foreach>
+        SELECT 1 FROM DUAL
+    </insert>
+
+    <select id="selectRecoTop3"
+            resultType="kr.co.api.backend.dto.survey.RecoProductDTO">
+        SELECT
+            r.rank_no AS rankNo,
+            r.product_id AS dpstId,
+            p.dpst_name AS dpstName,
+            p.dpst_info AS dpstInfo,
+            p.dpst_currency AS dpstCurrency
+        FROM TB_CUST_RECO_TOP3 r
+        JOIN TB_DPST_PROD_INFO p
+          ON TRIM(r.product_id) = TRIM(p.dpst_id)
+        WHERE r.cust_code = #{custCode}
+          AND r.survey_id = #{surveyId}
+        ORDER BY r.rank_no ASC
+    </select>
+
+    <select id="selectOtherResponseOptions"
+            resultType="kr.co.api.backend.dto.survey.SimilarResponseOptionDTO">
+        SELECT
+            r.resp_id AS respId,
+            r.cust_code AS custCode,
+            d.opt_id AS optId
+        FROM TB_SURVEY_RESP_HDR r
+        JOIN TB_SURVEY_RESP_DTL d
+          ON r.resp_id = d.resp_id
+        WHERE r.survey_id = #{surveyId}
+          AND r.cust_code != #{custCode}
+          AND d.q_id BETWEEN 1 AND 9
+          AND d.opt_id IS NOT NULL
+    </select>
+
+    <select id="selectSimilarCustomerPurchases"
+            resultType="kr.co.api.backend.dto.survey.SimilarPurchaseDTO">
+        SELECT
+            dpst_hdr_cust_code AS custCode,
+            dpst_hdr_dpst_id AS productId,
+            COUNT(*) AS cnt
+        FROM TB_DPST_ACCT_HDR
+        WHERE dpst_hdr_cust_code IN
+        <foreach collection="custCodes" item="custCode" open="(" separator="," close=")">
+            #{custCode}
+        </foreach>
+        GROUP BY dpst_hdr_cust_code, dpst_hdr_dpst_id
+    </select>
+
+</mapper>
