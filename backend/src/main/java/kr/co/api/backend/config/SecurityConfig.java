@@ -35,9 +35,10 @@ public class SecurityConfig {
     public SecurityFilterChain mobileFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .securityMatcher("/api/mobile/**")
+                .securityMatcher("/api/mobile/**", "/backend/api/mobile/**")
                 .csrf(csrf -> csrf.disable())
                 .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -49,7 +50,9 @@ public class SecurityConfig {
                                 "/api/mobile/member/auth/send-code",  // 인증번호 발송
                                 "/api/mobile/member/auth/verify-code",// 인증번호 검증
                                 "/api/mobile/member/register-device", // 기기 등록 허용
-                                "/api/mobile/member/login-pin"        // PIN 로그인
+                                "/api/mobile/member/login-pin",       // PIN 로그인
+                                "/api/mobile/surveys/**",             // 설문 조회/저장
+                                "/backend/api/mobile/surveys/**"      // 설문 조회/저장 (backend prefix)
                         ).permitAll()
 
                         // 🔓 환율 조회 API는 로그인 없이 허용
@@ -65,6 +68,9 @@ public class SecurityConfig {
                                 "/api/mobile/member/auth/send-code-hp",
                                 "/api/mobile/member/auth/verify-code-hp",
                                 "/member/api/register"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/api/mobile/mypage/chatbot"
                         ).permitAll()
 
                         // 🔐 나머지는 전부 인증 필요 (환전 신청, 계좌 조회 등)
@@ -93,7 +99,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/", "/member/**", "/css/**", "/js/**", "/images/**",
-                                "/uploads/**", "/api/register","/api/risk/**"
+                                "/uploads/**", "/api/register","/api/risk/**",
+                                "/api/surveys/**", "/backend/api/surveys/**"
                         ).permitAll()
                         .requestMatchers("/admin/**").permitAll() // 개발용
                         .anyRequest().authenticated()
@@ -101,8 +108,17 @@ public class SecurityConfig {
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
                 // 웹은 인증 실패 시 로그인 페이지로 이동 (기존 클래스 사용)
                 .exceptionHandling(exception ->
-                        exception.authenticationEntryPoint(customAuthenticationEntryPoint)
+                        exception
+                                .defaultAuthenticationEntryPointFor(
+                                        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                                        request ->
+                                                request.getRequestURI().startsWith("/admin/api")
+                                                        || request.getRequestURI().startsWith("/api")
+                                )
+                                .authenticationEntryPoint(customAuthenticationEntryPoint)
                 );
+
+
 
         return http.build();
     }
