@@ -109,17 +109,15 @@ public class SecurityConfig {
                 // 웹은 인증 실패 시 로그인 페이지로 이동 (기존 클래스 사용)
                 .exceptionHandling(exception ->
                         exception
-                                // 🔹 API 요청은 302 말고 401로
                                 .defaultAuthenticationEntryPointFor(
                                         new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
                                         request ->
-                                                request.getRequestURI().startsWith("/backend/admin/api")
-                                                        || request.getRequestURI().startsWith("/admin/api")
-                                                        || request.getRequestURI().startsWith("/backend/api")
+                                                request.getRequestURI().startsWith("/admin/api")
+                                                        || request.getRequestURI().startsWith("/api")
                                 )
-                                // 🔹 나머지(웹 페이지만) 로그인 리다이렉트
                                 .authenticationEntryPoint(customAuthenticationEntryPoint)
                 );
+
 
 
         return http.build();
