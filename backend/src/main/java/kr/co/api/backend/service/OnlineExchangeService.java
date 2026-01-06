@@ -44,6 +44,12 @@ public class OnlineExchangeService {
             throw new IllegalStateException("고객 정보를 찾을 수 없습니다.");
         }
 
+        // 2. 약관 동의 여부 백엔드 더블 체크
+        boolean isAgreed = onlineExchangeMapper.checkExchangeTermsAgreed(custCode) > 0;
+        if (!isAgreed) {
+            throw new IllegalStateException("환전 서비스 약관에 동의하지 않았습니다. 약관 동의 후 진행해주세요.");
+        }
+
         // DTO에 고객 코드 세팅
         dto.setExchCustCode(custCode);
 
