@@ -44,6 +44,7 @@
 
     <select id="dpstIdList" resultType="String">
         select dpst_id from TB_DPST_PROD_INFO
+        where DPST_STATUS=3
     </select>
 
 
